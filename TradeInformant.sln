@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34031.279
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TradeInformant", "TradeInformant.csproj", "{FF7C6CF7-66CE-4CAA-BFE7-D79F60CEF22E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FF7C6CF7-66CE-4CAA-BFE7-D79F60CEF22E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF7C6CF7-66CE-4CAA-BFE7-D79F60CEF22E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF7C6CF7-66CE-4CAA-BFE7-D79F60CEF22E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF7C6CF7-66CE-4CAA-BFE7-D79F60CEF22E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B4ACBA6E-AB95-4527-BE9F-E437C00E8FDF}
+	EndGlobalSection
+EndGlobal
