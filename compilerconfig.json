@@ -1,0 +1,10 @@
+﻿[
+  {
+    "outputFile": "wwwroot/css/custom.css",
+    "inputFile": "wwwroot/css/custom.scss"
+  },
+  {
+    "outputFile": "wwwroot/scss/custom.css",
+    "inputFile": "wwwroot/scss/custom.scss"
+  }
+]
