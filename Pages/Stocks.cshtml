@@ -30,9 +30,9 @@
                 </p>
 
                 <h6>How is it calculated?</h6>
-                
+
                 <p>
-                    It's a weighted averege that factors in the most recent price changes compared 
+                    It's a weighted averege that factors in the most recent price changes compared
                 </p>
 
                 <h6>MACD - Moving Average Convergence Divergence</h6>
@@ -44,7 +44,7 @@
                 <h6>How is it calculated?</h6>
 
                 <p>
-                    It's typically calculated by subtracting the 26-period EMA from the 12-period EMA. This results in the MACD line. 
+                    It's typically calculated by subtracting the 26-period EMA from the 12-period EMA. This results in the MACD line.
                     A 9-day EMA of the MACD is called the "signal line".
                 </p>
 
@@ -63,6 +63,27 @@
             </section>
         </div>
         <div class="col-md-8">
+            <h1>Stock Output</h1>
+            <form method="post">
+                <label>
+                    Stock Name:<br />
+                    <input type="text" name="stockName" id="stockName" required />
+                </label>
+                <br />
+                <label>
+                    Select Interval:<br />
+                    <select id="interval" name="interval">
+                        <option value="daily">Daily</option>
+                        <option value="weekly">Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </label>
+                <br />
+                <label>
+                    Number of Periods:<br />
+                    <input type="number" name="periods" id="periods" min="1" required />
+                </label>
+            </form>
         </div>
     </div>
 </div>
