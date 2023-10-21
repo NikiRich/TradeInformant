@@ -27,17 +27,32 @@ fetch("/Stock", {
         return response.json();
     })
     .then(data => {
-        displayStock(data);
+        displayStock(data, interval);
     })
     .catch(error => {
         console.error("Error:", error);
     });
 
-function displayStock(data) {
+function displayStock(data, interval) {
     const output = document.getElementById("StockResult");
     output.innerHTML = "";
 
-    data.forEach(stock => {
-       
-    });
+    let timeSeriesDate;
+
+    switch (interval) {
+        case "daily":
+            timeSeriesDate = "Time Series (Daily)";
+            break;
+        case "weekly":
+            timeSeriesDate = "Weekly Time Series";
+            break;
+        case "monthly":
+            timeSeriesDate = "Monthly Time Series";
+            break;
+        default:
+            alert("Please select a valid interval.");
+            return;
+    }
+
+    const timeSeries = data[timeSeriesDate];
 }
