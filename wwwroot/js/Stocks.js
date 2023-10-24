@@ -10,43 +10,46 @@
         return;
     }
 
-    const stockForm = new FormData();
-    stockForm.append("stockName", stockName);
-    stockForm.append("interval", interval);
-    stockForm.append("periods", periods);
+    const query = new URLSearchParams({
+        stockName: stockName,
+        interval: interval,
+        periods: periods
+    });
 
-    fetch("/Stock", {
-        method: "POST",
-        body: stockForm
-    })
+    fetch("/Stocks?" + query.toString())
         .then(response => {
             if (!response.ok) {
-                throw new Error(response.statusText);
+                return response.text().then(text => {
+                    throw new Error(text);
+                });
             }
             return response.json();
         })
         .then(data => {
-            displayStock(data, interval);
+            displayStock(data, interval, periods);
         })
         .catch(error => {
             console.error("Error:", error);
         });
 });
 
-function displayStock(data, interval) {
+
+
+function displayStock(data, interval, periods) {
+    console.log(data);
     const output = document.getElementById("StockResult");
     output.innerHTML = "";
 
     let timeSeriesDate;
 
     switch (interval) {
-        case "daily":
+        case "Daily":
             timeSeriesDate = "Time Series (Daily)";
             break;
-        case "weekly":
+        case "Weekly":
             timeSeriesDate = "Weekly Time Series";
             break;
-        case "monthly":
+        case "Monthly":
             timeSeriesDate = "Monthly Time Series";
             break;
         default:
@@ -56,11 +59,15 @@ function displayStock(data, interval) {
 
     const timeSeries = data[timeSeriesDate];
 
-    const dates = Object.keys(timeSeries).slice(0, number);
+if (!timeSeries) {
+    alert("No data available for the selected interval.");
+    return;
+}
 
-    for (const date of dates) {
-        const stockInfo = timeSeries[date];
-        output.innerHTML += `
+const dates = Object.keys(timeSeries).slice(0, periods);
+for (const date of dates) {
+    const stockInfo = timeSeries[date];
+    output.innerHTML += `
         <div id="StockOutput">
             <p>Date: ${date}</p>
             <p>Open: ${stockInfo["1. open"]}</p>
@@ -68,6 +75,7 @@ function displayStock(data, interval) {
             <p>Low: ${stockInfo["3. low"]}</p>
             <p>Close: ${stockInfo["4. close"]}</p>
         </div>
-        `
-    }
+    `;
+}
+
 }
