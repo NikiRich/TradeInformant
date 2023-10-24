@@ -65,7 +65,7 @@
         </div>
         <div class="col-md-8">
             <h1>Stock Output</h1>
-            <form method="post" id="StockForm">
+            <form method="get" id="StockForm" action="/Stocks">
                 <label>
                     Stock Name:<br />
                     <input type="text" name="stockName" id="stockName" required />
@@ -75,9 +75,9 @@
                     Interval:<br />
                     <select id="interval" name="interval">
                         <option value="none" selected disabled hidden>Select an Interval</option>
-                        <option value="daily">Daily</option>
-                        <option value="weekly">Weekly</option>
-                        <option value="monthly">Monthly</option>
+                        <option value="Daily">Daily</option>
+                        <option value="Weekly">Weekly</option>
+                        <option value="Monthly">Monthly</option>
                     </select>
                 </label>
                 <br />
@@ -86,7 +86,7 @@
                     <input type="number" name="periods" id="periods" min="1" max="100" placeholder="Between 1 and 100" required />
                 </label>
                 <br /><br />
-                <button type="button">Get data</button>
+                <button type="submit">Get data</button>
             </form>
             <div id="StockResult"></div>
         </div>
