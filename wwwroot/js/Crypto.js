@@ -1,8 +1,9 @@
-﻿document.getElementById("StockForm").addEventListener("submit", function (event) {
+﻿document.getElementById("CryptoForm").addEventListener("submit", function (event) {
     event.preventDefault();
 
-    const stockName = document.getElementById("stockName").value;
+    const cryptoName = document.getElementById("cryptoName").value;
     const interval = document.getElementById("interval").value;
+    const market = "USD";
     const periods = parseInt(document.getElementById("periods").value);
 
     if (isNaN(periods) || periods < 1 || periods > 100) {
@@ -11,12 +12,13 @@
     }
 
     const query = new URLSearchParams({
-        stockName: stockName,
+        cryptoName: cryptoName, 
         interval: interval,
-        periods: periods
+        periods: periods,
+        market: market
     });
 
-    fetch("/Stocks?" + query.toString())
+    fetch("/Crypto?" + query.toString())
         .then(response => {
             if (!response.ok) {
                 return response.text().then(text => {
@@ -26,31 +28,28 @@
             return response.json();
         })
         .then(data => {
-            displayStock(data, interval, periods);
+            displayCrypto(data, interval, periods); 
         })
         .catch(error => {
             console.error("Error:", error);
         });
 });
 
-
-
-function displayStock(data, interval, periods) {
+function displayCrypto(data, interval, periods) {
     console.log(data);
-    const output = document.getElementById("StockResult");
+    const output = document.getElementById("CryptoResult");
     output.innerHTML = "";
 
     let timeSeriesDate;
-
     switch (interval) {
         case "Daily":
-            timeSeriesDate = "Time Series (Daily)";
+            timeSeriesDate = "Time Series (Digital Currency Daily)";
             break;
         case "Weekly":
-            timeSeriesDate = "Weekly Time Series";
+            timeSeriesDate = "Time Series (Digital Currency Weekly)";
             break;
         case "Monthly":
-            timeSeriesDate = "Monthly Time Series";
+            timeSeriesDate = "Time Series (Digital Currency Monthly)";
             break;
         default:
             alert("Please select a valid interval.");
@@ -58,7 +57,6 @@ function displayStock(data, interval, periods) {
     }
 
     const timeSeries = data[timeSeriesDate];
-
     if (!timeSeries) {
         alert("No data available for the selected interval.");
         return;
@@ -66,16 +64,18 @@ function displayStock(data, interval, periods) {
 
     const dates = Object.keys(timeSeries).slice(0, periods);
     for (const date of dates) {
-        const stockInfo = timeSeries[date];
+        const cryptoInfo = timeSeries[date];
         output.innerHTML += `
-        <div id="StockOutput">
-            <p>Date: ${date}</p>
-            <p>Open: ${stockInfo["1. open"]}</p>
-            <p>High: ${stockInfo["2. high"]}</p>
-            <p>Low: ${stockInfo["3. low"]}</p>
-            <p>Close: ${stockInfo["4. close"]}</p>
-        </div>
-    `;
+            <div id="CryptoOutput">
+                <p>Date: ${date}</p>
+                <p>Open: ${cryptoInfo["1b. open (USD)"]}</p>
+                <p>High: ${cryptoInfo["2b. high (USD)"]}</p>
+                <p>Low: ${cryptoInfo["3b. low (USD)"]}</p>
+                <p>Close: ${cryptoInfo["4b. close (USD)"]}</p>
+                <p>Volume: ${cryptoInfo["5. volume"]}</p>
+                <p>Market Cap: ${cryptoInfo["6. market cap (USD)"]}</p>
+            </div>
+        `;
     }
-
 }
+
