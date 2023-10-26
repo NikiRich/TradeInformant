@@ -57,13 +57,14 @@ namespace TradeInformant.Pages
                 var jsonString = System.IO.File.ReadAllText(filePath);
                 var cacheEntry = JsonSerializer.Deserialize<CacheEntry>(jsonString);
 
-                if (DateTime.UtcNow - cacheEntry.Timestamp < CacheDuration)
+                if (cacheEntry != null && DateTime.UtcNow - cacheEntry.Timestamp < CacheDuration)
                 {
-                    return cacheEntry.Data;
+                    return cacheEntry.Data ?? new Dictionary<string, dynamic>();
                 }
             }
-            return null;
+            return new Dictionary<string, dynamic>();
         }
+
 
 
 
