@@ -15,7 +15,7 @@ namespace TradeInformant.Pages
         public int periods { get; set; }
 
         private static readonly string stockFile = "cache.json";
-        private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(72);
+        private static readonly TimeSpan CacheDuration = TimeSpan.FromDays(7);
 
         public class CacheEntry
         {
