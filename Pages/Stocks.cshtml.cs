@@ -14,7 +14,7 @@ namespace TradeInformant.Pages
         public string interval { get; set; }
         public int periods { get; set; }
 
-        private static readonly string CachePath = "cache.json";
+        private static readonly string stockFile = "cache.json";
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(72);
 
         public class CacheEntry
@@ -25,9 +25,9 @@ namespace TradeInformant.Pages
 
         public Dictionary<string, dynamic> LoadCacheFromFile()
         {
-            if (System.IO.File.Exists(CachePath))
+            if (System.IO.File.Exists(stockFile))
             {
-                var jsonString = System.IO.File.ReadAllText(CachePath);
+                var jsonString = System.IO.File.ReadAllText(stockFile);
                 var cacheEntry = JsonSerializer.Deserialize<CacheEntry>(jsonString);
 
                 if (DateTime.UtcNow - cacheEntry.Timestamp < CacheDuration)
@@ -46,9 +46,9 @@ namespace TradeInformant.Pages
                 Timestamp = DateTime.UtcNow
             };
 
-            lock (CachePath)
+            lock (stockFile)
             {
-                System.IO.File.WriteAllText(CachePath, JsonSerializer.Serialize(cacheEntry));
+                System.IO.File.WriteAllText(stockFile, JsonSerializer.Serialize(cacheEntry));
             }
         }
 

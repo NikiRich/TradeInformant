@@ -14,6 +14,9 @@ namespace TradeInformant.Pages
         public string market { get; set; }
         public int periods { get; set; }
 
+        private static readonly string cryptoFile = "cryptoCache.json";
+
+
         public IActionResult OnGet(string? stockName, string? interval, string? market, int? periods)
         {
             if (stockName == null || interval == null || market == null || periods == null)
