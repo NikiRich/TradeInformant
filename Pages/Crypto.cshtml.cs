@@ -7,7 +7,7 @@ using System.Text.Json;
 
 namespace TradeInformant.Pages
 {
-    public class CryptoModel : PageModel // Adjusted the class name for clarity
+    public class CryptoModel : PageModel 
     {
         public string stockName { get; set; }
         public string interval { get; set; }
