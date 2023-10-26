@@ -65,6 +65,7 @@ namespace TradeInformant.Pages
             this.periods = (int)periods;
 
             const string API_KEY = "1F6SLA57L4NZM1DR";
+
             string function;
 
             switch (interval)
