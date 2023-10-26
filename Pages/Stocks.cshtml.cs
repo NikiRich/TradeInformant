@@ -5,29 +5,56 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text.Json;
+using Microsoft.AspNetCore.Hosting;
+
 
 namespace TradeInformant.Pages
 {
     public class StocksModel : PageModel
     {
-        public string stockName { get; set; }
-        public string interval { get; set; }
+        public string? stockName { get; set; }
+        public string? interval { get; set; }
         public int periods { get; set; }
 
-        private static readonly string stockFile = "cache.json";
+
+        private readonly IWebHostEnvironment _env;
+
         private static readonly TimeSpan CacheDuration = TimeSpan.FromDays(7);
+        
+        private string CacheDirectory => Path.Combine(_env.ContentRootPath, "CachedFiles");
+
+
+
+        public StocksModel(IWebHostEnvironment env)
+        {
+            _env = env;
+        }
+
+
 
         public class CacheEntry
         {
-            public Dictionary<string, dynamic> Data { get; set; }
+            public Dictionary<string, dynamic>? Data { get; set; }
             public DateTime Timestamp { get; set; }
         }
 
-        public Dictionary<string, dynamic> LoadCacheFromFile()
+
+
+        public string GetCacheFileName(string stockName, string interval)
         {
-            if (System.IO.File.Exists(stockFile))
+            var fileName = $"cache_{stockName}_{interval}.json";
+            return Path.Combine(CacheDirectory, fileName);
+        }
+
+
+
+        public Dictionary<string, dynamic> LoadCacheFromFile(string stockName, string interval)
+        {
+            string filePath = GetCacheFileName(stockName, interval);
+
+            if (System.IO.File.Exists(filePath))
             {
-                var jsonString = System.IO.File.ReadAllText(stockFile);
+                var jsonString = System.IO.File.ReadAllText(filePath);
                 var cacheEntry = JsonSerializer.Deserialize<CacheEntry>(jsonString);
 
                 if (DateTime.UtcNow - cacheEntry.Timestamp < CacheDuration)
@@ -38,7 +65,9 @@ namespace TradeInformant.Pages
             return null;
         }
 
-        public void SaveCacheToFile(Dictionary<string, dynamic> data)
+
+
+        public void SaveCacheToFile(Dictionary<string, dynamic> data, string stockName, string interval)
         {
             var cacheEntry = new CacheEntry
             {
@@ -46,11 +75,14 @@ namespace TradeInformant.Pages
                 Timestamp = DateTime.UtcNow
             };
 
-            lock (stockFile)
+            string filePath = GetCacheFileName(stockName, interval);
+
+            lock (filePath)
             {
-                System.IO.File.WriteAllText(stockFile, JsonSerializer.Serialize(cacheEntry));
+                System.IO.File.WriteAllText(filePath, JsonSerializer.Serialize(cacheEntry));
             }
         }
+
 
 
         public IActionResult OnGet(string? stockName, string? interval, int? periods)
@@ -83,10 +115,11 @@ namespace TradeInformant.Pages
                     return new BadRequestObjectResult($"Invalid interval: {interval}");
             }
 
+
             string url = $"https://www.alphavantage.co/query?function={function}&symbol={stockName}&apikey={API_KEY}";
             Uri uri = new Uri(url);
 
-            Dictionary<string, dynamic> jsonInfo = LoadCacheFromFile();
+            Dictionary<string, dynamic> jsonInfo = LoadCacheFromFile(stockName, interval);
 
             if (jsonInfo == null)
             {
@@ -102,7 +135,7 @@ namespace TradeInformant.Pages
                             return new BadRequestObjectResult("Error retrieving data for the particular stock or invalid data format");
                         }
 
-                        SaveCacheToFile(jsonInfo);
+                        SaveCacheToFile(jsonInfo, stockName, interval);
                     }
                 }
                 catch (Exception ex)

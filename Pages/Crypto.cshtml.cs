@@ -10,9 +10,9 @@ namespace TradeInformant.Pages
 {
     public class CryptoModel : PageModel
     {
-        public string stockName { get; set; }
-        public string interval { get; set; }
-        public string market { get; set; }
+        public string? stockName { get; set; }
+        public string? interval { get; set; }
+        public string? market { get; set; }
         public int periods { get; set; }
 
         private static readonly string cryptoFile = "cryptoCache.json";
