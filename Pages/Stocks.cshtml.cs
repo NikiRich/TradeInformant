@@ -132,7 +132,7 @@ namespace TradeInformant.Pages
 
                         if (jsonInfo == null)
                         {
-                            Console.WriteLine($"Interval: {interval}, StockName: {stockName}");
+                            Console.WriteLine($"Interval: {interval}, stockName: {stockName}");
                             return new BadRequestObjectResult("Error retrieving data for the particular stock or invalid data format");
                         }
 

@@ -2,44 +2,73 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Text.Json;
-using static TradeInformant.Pages.StocksModel;
+using Microsoft.AspNetCore.Hosting;
+using System.Security.Cryptography.X509Certificates;
+
 
 namespace TradeInformant.Pages
 {
     public class CryptoModel : PageModel
     {
-        public string? stockName { get; set; }
+        public string? cryptoName { get; set; }
         public string? interval { get; set; }
         public string? market { get; set; }
         public int periods { get; set; }
 
-        private static readonly string cryptoFile = "cryptoCache.json";
+        private readonly IWebHostEnvironment _env;
+
         private static readonly TimeSpan CacheDuration = TimeSpan.FromDays(7);
+
+        private string CacheDirectory => Path.Combine(_env.ContentRootPath, "CachedFiles");
+
+
+
+        public CryptoModel(IWebHostEnvironment env)
+        {
+            _env = env;
+        }
+
+
 
         public class CacheEntry
         {
-            public Dictionary<string, dynamic> Data { get; set; }
+            public Dictionary<string, dynamic>? Data { get; set; }
             public DateTime Timestamp { get; set; }
         }
 
-        public Dictionary<string, dynamic> LoadCacheFromFile(string path)
-        {
-            if (System.IO.File.Exists(cryptoFile))
-            {
-                var jsonString = System.IO.File.ReadAllText(cryptoFile);
-                var cacheEntry = JsonSerializer.Deserialize<CacheEntry>(jsonString);
 
-                if (DateTime.UtcNow - cacheEntry.Timestamp < CacheDuration)
-                {
-                    return cacheEntry.Data;
-                }
-            }
-            return null;
+
+        public string GetCacheFileName(string cryptoName, string interval)
+        {
+            var fileName = $"cache_{cryptoName}_{interval}.json";
+            return Path.Combine(CacheDirectory, fileName);
         }
 
-        public void SaveCacheToFile(Dictionary<string, dynamic> data, string path)
+
+
+        public Dictionary<string, dynamic> LoadCacheFromFile(string cryptoName, string interval)
+        {
+            string filePath = GetCacheFileName(cryptoName, interval);
+
+            if (System.IO.File.Exists(filePath))
+            {
+                var jsonString = System.IO.File.ReadAllText(filePath);
+                var cacheEntry = JsonSerializer.Deserialize<CacheEntry>(jsonString);
+
+                if (cacheEntry != null && DateTime.UtcNow - cacheEntry.Timestamp < CacheDuration)
+                {
+                    return cacheEntry.Data ?? new Dictionary<string, dynamic>();
+                }
+            }
+            return new Dictionary<string, dynamic>();
+        }
+
+
+
+        public void SaveCacheToFile(Dictionary<string, dynamic> data, string cryptoName, string interval)
         {
             var cacheEntry = new CacheEntry
             {
@@ -47,21 +76,24 @@ namespace TradeInformant.Pages
                 Timestamp = DateTime.UtcNow
             };
 
-            lock (cryptoFile)
+            string filePath = GetCacheFileName(cryptoName, interval);
+
+            lock (filePath)
             {
-                System.IO.File.WriteAllText(cryptoFile, JsonSerializer.Serialize(cacheEntry));
+                System.IO.File.WriteAllText(filePath, JsonSerializer.Serialize(cacheEntry));
             }
         }
 
 
-        public IActionResult OnGet(string? stockName, string? interval, string? market, int? periods)
+
+        public IActionResult OnGet(string? cryptoName, string? interval, string? market, int? periods)
         {
-            if (stockName == null || interval == null || market == null || periods == null)
+            if (cryptoName == null || interval == null || market == null || periods == null)
             {
                 return Page();
             }
 
-            this.stockName = stockName;
+            this.cryptoName = cryptoName;
             this.interval = interval;
             this.market = market;
             this.periods = (int)periods;
@@ -85,10 +117,10 @@ namespace TradeInformant.Pages
                     return new BadRequestObjectResult($"Invalid interval: {interval}");
             }
 
-            string url = $"https://www.alphavantage.co/query?function={function}&symbol={stockName}&market={market}&apikey={API_KEY}";
+            string url = $"https://www.alphavantage.co/query?function={function}&symbol={cryptoName}&market={market}&apikey={API_KEY}";
             Uri uri = new Uri(url);
 
-            Dictionary<string, dynamic> jsonInfo = LoadCacheFromFile(cryptoFile);
+            Dictionary<string, dynamic> jsonInfo = LoadCacheFromFile(cryptoName, interval);
 
             if (jsonInfo == null)
             {
@@ -100,18 +132,20 @@ namespace TradeInformant.Pages
 
                         if (jsonInfo == null)
                         {
-                            Console.WriteLine($"Interval: {interval}, CryptoName: {stockName}, Market: {market}");
+                            Console.WriteLine($"Interval: {interval}, cryptoName: {cryptoName}, Market: {market}");
                             return new BadRequestObjectResult("Error retrieving data for the particular cryptocurrency or invalid data format");
                         }
-                        return new JsonResult(jsonInfo);
+
+                        SaveCacheToFile(jsonInfo, cryptoName, interval);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error fetching cryptocurrency data for {stockName} with interval {interval} and market {market}: {ex.Message}");
+                    Console.WriteLine($"Error fetching cryptocurrency data for {cryptoName} with interval {interval} and market {market}: {ex.Message}");
                     return new BadRequestObjectResult("Error fetching cryptocurrency data. Please try again later.");
                 }
             }
+
             return new JsonResult(jsonInfo);
         }
     }
