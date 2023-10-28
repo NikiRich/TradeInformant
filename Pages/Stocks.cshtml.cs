@@ -54,16 +54,24 @@ namespace TradeInformant.Pages
 
             if (System.IO.File.Exists(filePath))
             {
-                var jsonString = System.IO.File.ReadAllText(filePath);
-                var cacheEntry = JsonSerializer.Deserialize<CacheEntry>(jsonString);
-
-                if (cacheEntry != null && DateTime.UtcNow - cacheEntry.Timestamp < CacheDuration)
+                try
                 {
-                    return cacheEntry.Data ?? new Dictionary<string, dynamic>();
+                    var jsonString = System.IO.File.ReadAllText(filePath);
+                    var cacheEntry = JsonSerializer.Deserialize<CacheEntry>(jsonString);
+
+                    if (cacheEntry != null && DateTime.UtcNow - cacheEntry.Timestamp < CacheDuration)
+                    {
+                        return cacheEntry.Data ?? new Dictionary<string, dynamic>();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error reading or deserializing cache for {stockName} - {interval}: {e.Message}");
                 }
             }
-            return new Dictionary<string, dynamic>();
+            return null;
         }
+
 
 
 
