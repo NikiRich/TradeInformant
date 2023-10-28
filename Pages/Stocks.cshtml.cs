@@ -48,7 +48,7 @@ namespace TradeInformant.Pages
 
 
 
-        public Dictionary<string, dynamic> LoadCacheFromFile(string stockName, string interval)
+        public Dictionary<string, dynamic>? LoadCacheFromFile(string stockName, string interval)
         {
             string filePath = GetCacheFileName(stockName, interval);
 
@@ -128,13 +128,13 @@ namespace TradeInformant.Pages
             string url = $"https://www.alphavantage.co/query?function={function}&symbol={stockName}&apikey={API_KEY}";
             Uri uri = new Uri(url);
 
-            Dictionary<string, dynamic> jsonInfo = LoadCacheFromFile(stockName, interval);
+            Dictionary<string, dynamic>? jsonInfo = LoadCacheFromFile(stockName, interval);
 
             if (jsonInfo == null)
             {
                 try
                 {
-                    using (WebClient client = new WebClient())
+                    using (WebClient client = new())
                     {
                         jsonInfo = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(client.DownloadString(uri));
 

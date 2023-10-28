@@ -6,8 +6,6 @@ using System.IO;
 using System.Net;
 using System.Text.Json;
 using Microsoft.AspNetCore.Hosting;
-using System.Security.Cryptography.X509Certificates;
-
 
 namespace TradeInformant.Pages
 {
@@ -85,11 +83,11 @@ namespace TradeInformant.Pages
         }
 
 
-
         public IActionResult OnGet(string? cryptoName, string? interval, string? market, int? periods)
         {
-            if (cryptoName == null || interval == null || market == null || periods == null)
+            if (cryptoName == null || interval == null || periods == null)
             {
+                Console.WriteLine($"Parameters are missing");
                 return Page();
             }
 
@@ -116,6 +114,7 @@ namespace TradeInformant.Pages
                 default:
                     return new BadRequestObjectResult($"Invalid interval: {interval}");
             }
+
 
             string url = $"https://www.alphavantage.co/query?function={function}&symbol={cryptoName}&market={market}&apikey={API_KEY}";
             Uri uri = new Uri(url);

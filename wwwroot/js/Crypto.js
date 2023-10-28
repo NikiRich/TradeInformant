@@ -3,7 +3,7 @@
 
     const cryptoName = document.getElementById("cryptoName").value;
     const interval = document.getElementById("interval").value;
-    const market = "USD";
+    const market = "CNY";
     const periods = parseInt(document.getElementById("periods").value);
 
     if (isNaN(periods) || periods < 1 || periods > 100) {
@@ -14,11 +14,11 @@
     const query = new URLSearchParams({
         cryptoName: cryptoName, 
         interval: interval,
-        periods: periods,
-        market: market
+        market: market,
+        periods: periods
     });
 
-    fetch("/Crypto?" + query.toString())
+    fetch("/Cryptos?" + query.toString())
         .then(response => {
             if (!response.ok) {
                 return response.text().then(text => {
