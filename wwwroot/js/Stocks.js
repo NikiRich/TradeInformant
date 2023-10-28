@@ -38,7 +38,7 @@
 function displayStock(data, interval, periods) {
     console.log(data);
     const output = document.getElementById("StockResult");
-    output.innerHTML = "";
+    output.innerHTML = '';
 
     let timeSeriesDate;
 
@@ -68,14 +68,19 @@ function displayStock(data, interval, periods) {
     for (const date of dates) {
         const stockInfo = timeSeries[date];
         output.innerHTML += `
-        <div id="StockOutput">
-            <p>Date: ${date}</p>
-            <p>Open: ${stockInfo["1. open"]}</p>
-            <p>High: ${stockInfo["2. high"]}</p>
-            <p>Low: ${stockInfo["3. low"]}</p>
-            <p>Close: ${stockInfo["4. close"]}</p>
+        <div class="col-md-3">
+            <div class="card mb-3">
+                <div class="card-header">
+                    Date: ${date}
+                </div>
+                    <div class="card-body">
+                        <p><strong>Open:</strong> ${stockInfo["1. open"]}</p>
+                        <p><strong>High:</strong> ${stockInfo["2. high"]}</p>
+                        <p><strong>Low:</strong> ${stockInfo["3. low"]}</p>
+                        <p><strong>Close:</strong> ${stockInfo["4. close"]}</p>
+                    </div>
+            </div>
         </div>
-    `;
+        `;
     }
-
 }
