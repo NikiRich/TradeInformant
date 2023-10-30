@@ -1,11 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Text.Json;
-using Microsoft.AspNetCore.Hosting;
 
 
 namespace TradeInformant.Pages
@@ -16,20 +12,11 @@ namespace TradeInformant.Pages
         public string? interval { get; set; }
         public int periods { get; set; }
 
-        public decimal SMA { get; set; }
-
-        public decimal EMA { get; set; }
-
-        public decimal RSI { get; set; }
-
-        public decimal MACD { get; set; }
-
-
 
         private readonly IWebHostEnvironment _env;
 
         private static readonly TimeSpan CacheDuration = TimeSpan.FromDays(7);
-        
+
         private string CacheDirectory => Path.Combine(_env.ContentRootPath, "CachedFiles");
 
 
@@ -138,6 +125,7 @@ namespace TradeInformant.Pages
             Uri uri = new Uri(url);
 
             Dictionary<string, dynamic>? jsonInfo = LoadCacheFromFile(stockName, interval);
+
             if (jsonInfo == null)
             {
                 try
@@ -162,24 +150,6 @@ namespace TradeInformant.Pages
                 }
             }
 
-            if (jsonInfo.ContainsKey($"Time Series ({interval})"))
-            {
-                var timeSeries = jsonInfo[$"Time Series ({interval})"] as Dictionary<string, Dictionary<string, dynamic>>;
-                if (timeSeries != null)
-                {
-                    List<decimal> closePrices = new List<decimal>();
-                    foreach (var entry in timeSeries.Take(periods.Value))
-                    {
-                        decimal closePrice = Decimal.Parse(entry.Value["4. close"]);
-                        closePrices.Add(closePrice);
-                    }
-
-                    SMA = closePrices.Average();
-
-                    jsonInfo["SMA"] = SMA.ToString("F2");
-                }
-            }
-            
             return new JsonResult(jsonInfo);
         }
     }
