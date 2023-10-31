@@ -39,14 +39,16 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
             // Compute SMA and EMA values.
             const SMA = computeSMA(timeSeries, periods);
             const EMA = computeEMA(timeSeries, periods);
+            const RSI = computeRSI(timeSeries, periods);
             // Display the stock information.
-            displayStock(data, interval, periods, SMA, EMA);
+            displayStock(data, interval, periods, SMA, EMA, RSI);
         })
         .catch(error => {
             // Handle any errors that occurred during the fetch.
             console.error("Error:", error);
         });
 });
+
 
 // Get the time series data based on the selected interval.
 function getTimeSeries(data, interval) {
@@ -63,6 +65,7 @@ function getTimeSeries(data, interval) {
     }
 }
 
+
 // Compute the Simple Moving Average (SMA) for the given period.
 function computeSMA(timeSeries, periods) {
     // If the timeSeries data is not available, return null.
@@ -72,6 +75,7 @@ function computeSMA(timeSeries, periods) {
     const sum = closingPrices.reduce((acc, price) => acc + price, 0);
     return sum / periods;
 }
+
 
 // Compute the Exponential Moving Average (EMA) for the given period.
 function computeEMA(timeSeries, periods) {
@@ -104,8 +108,42 @@ function computeEMA(timeSeries, periods) {
 }
 
 
+function computeRSI(timeSeries, periods) {
+    let gains = [];
+    let losses = [];
+
+    const closingPrices = Object.values(timeSeries).map(day => parseFloat(day["4. close"]));
+
+    for (let i = 1; i < closingPrices.length; i++) {
+        let change = closingPrices[i] - closingPrices[i - 1];
+        gains.push(Math.max(change, 0)); // If change is negative, push 0
+        losses.push(Math.max(-change, 0)); // If change is positive or 0, push 0
+    }
+
+    let avgGain = gains.slice(0, periods).reduce((acc, gain) => acc + gain, 0) / periods;
+    let avgLoss = losses.slice(0, periods).reduce((acc, loss) => acc + loss, 0) / periods;
+
+    let RS = avgGain / avgLoss;
+    let initialRSI = 100 - (100 / (1 + RS));
+
+    let RSI = [initialRSI];  // Initialize RSI as an array with the initial RSI value.
+
+    for (let i = periods; i < gains.length; i++) {
+        avgGain = ((avgGain * (periods - 1)) + gains[i]) / periods;
+        avgLoss = ((avgLoss * (periods - 1)) + losses[i]) / periods;
+
+        RS = avgGain / avgLoss;
+        let currentRSI = 100 - (100 / (1 + RS));
+        RSI.push(currentRSI);
+    }
+
+    return RSI;
+}
+
+
+
 // Display stock data, SMA, and EMA on the web page.
-function displayStock(data, interval, periods, SMA, EMA) {
+function displayStock(data, interval, periods, SMA, EMA, RSI) {
     const output = document.getElementById("StockResult");
 
     let timeSeriesDate;
@@ -142,6 +180,7 @@ function displayStock(data, interval, periods, SMA, EMA) {
     <div>
         <p><strong>SMA:</strong> ${SMA.toFixed(2)}</p>
         <p><strong>EMA:</strong> ${EMA[EMA.length - 1].toFixed(2)}</p>
+        <p><strong>RSI:</strong> ${RSI[RSI.length - 1].toFixed(2)}</p>
     </div>
     `;
 
