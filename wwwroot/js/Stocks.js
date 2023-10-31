@@ -28,7 +28,8 @@
         .then(data => {
             const timeSeries = getTimeSeries(data, interval);
             const SMA = computeSMA(timeSeries, periods);
-            displayStock(data, interval, periods, SMA);
+            const EMA = computeEMA(timeSeries, periods);
+            displayStock(data, interval, periods, SMA, EMA);
         })
         .catch(error => {
             console.error("Error:", error);
@@ -56,9 +57,31 @@ function computeSMA(timeSeries, periods) {
     return sum / periods;
 }
 
+function computeEMA(timeSeries, periods) {
+    if (!timeSeries) return null;
+
+    // Get the entire series of closing prices
+    const closingPrices = Object.values(timeSeries).map(day => parseFloat(day["4. close"]));
+
+    // Initial SMA for the starting point of EMA
+    const initialSMA = closingPrices.slice(0, periods).reduce((acc, price) => acc + price, 0) / periods;
+    let EMA = [initialSMA];
+
+    const multiplier = 2 / (periods + 1);
+
+    // Start computing EMA from the next day after initial SMA
+    for (let i = periods; i < closingPrices.length; i++) {
+        const newEMA = (closingPrices[i] * multiplier) + (EMA[EMA.length - 1] * (1 - multiplier));
+        EMA.push(newEMA);
+    }
+
+    return EMA;
+}
 
 
-function displayStock(data, interval, periods) {
+
+
+function displayStock(data, interval, periods, SMA, EMA) {
     const output = document.getElementById("StockResult");
 
     let timeSeriesDate;
@@ -87,11 +110,11 @@ function displayStock(data, interval, periods) {
 
     const dates = Object.keys(timeSeries).slice(0, periods);
 
-    const SMA = computeSMA(timeSeries, periods);
 
     output.innerHTML = ` 
     <div>
         <p><strong>SMA:</strong> ${SMA.toFixed(2)}</p>
+        <p><strong>EMA:</strong> ${EMA[EMA.length -1].toFixed(2)}</p>
     </div>
     `;
 
