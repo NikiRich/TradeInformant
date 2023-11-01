@@ -6,94 +6,42 @@
 
 <div class="container">
     <div class="row">
-        <div class="col-md-4">
-            <section>
-                <h1>Legend</h1>
+        <div class="col-md-7">
+            <h1>Legend</h1>
 
-                <div id="smaInfo">
+            <div id="smaInfo">
 
-                    <h6>SMA - Simple Movement Average</h6>
+                <h6>SMA - Simple Movement Average</h6>
 
-                    <p>
-                        SMA is an average of a stock's closing prices over a specified period of time.
-                    </p>
+                <p>
+                    SMA is an average of a stock's closing prices over a specified period of time.
+                </p>
 
-                    <h6>How is it calculated?</h6>
+                <h6>How is it calculated?</h6>
 
-                    <p>
-                        It's simply the sum of the closing prices over the number of Periods dived by
-                        that number of Periods.
-                    </p>
+                <p>
+                    It's simply the sum of the closing prices over the number of Periods dived by
+                    that number of Periods.
+                </p>
 
-                </div>
+            </div>
 
-                <div id="emaInfo">
+            <div id="emaInfo">
 
-                    <h6>EMA - Exponential Movement Average</h6>
+                <h6>EMA - Exponential Movement Average</h6>
 
-                    <p>
-                        Same as SMA but EMA puts more weight on recent prices and thus making it more
-                        responsive to recent price changes.
-                    </p>
+                <p>
+                    Same as SMA but EMA puts more weight on recent prices and thus making it more
+                    responsive to recent price changes.
+                </p>
 
-                    <h6>How is it calculated?</h6>
+                <h6>How is it calculated?</h6>
 
-                    <p>
-                        It's a weighted averege that factors in the most recent price changes compared
-                    </p>
+                <p>
+                    It's a weighted averege that factors in the most recent price changes compared
+                </p>
 
-                </div>
-
-                <div id="macdInfo">
-
-                    <h6>MACD - Moving Average Convergence Divergence</h6>
-
-                    <p>
-                        MACD is a trend-following momentum indicator that shows the relationship between two EMAs of a security’s price.
-                    </p>
-
-                    <h6>How is it calculated?</h6>
-
-                    <p>
-                        It's typically calculated by subtracting the 26-period EMA from the 12-period EMA. This results in the MACD line.
-                        A 9-day EMA of the MACD is called the "signal line".
-                    </p>
-
-                </div>
-
-                <div id="rsiInfo">
-
-                    <h6>RSI - Relative Strength Index</h6>
-
-                    <p>
-                        A technical indicator, used in momentum trading, that measures the speed and magnitude of a security's recent price changes.
-                        RSI oscillates between zero and 100.
-                        <br />
-                        <strong>
-                            Overbought when it's above 70:
-                        </strong> This means that the asset might be overvalued and could be primed for a pullback or a decline. Traders sometimes take this as a signal to sell or short the asset.
-                        <br />
-                        <strong>
-                            Oversold when it's below 30:
-                        </strong> This suggests that the asset might be undervalued and could be due for a bounce or an upward correction. Traders might take this as a signal to buy the asset.
-                        <br />
-                        <strong>
-                            Neutral between 30 and 70:
-                        </strong> The asset is considered to be in a normal range, and it's not giving any specific buy or sell signals based purely on the RSI.
-                    </p>
-
-                    <h6>How is it calculated?</h6>
-
-                    <p>
-                        It's typically calculated using recent up days and down days over a 14-day period.
-                    </p>
-
-                </div>
-
-            </section>
-
-        </div>
-        <div class="col-md-8">
+            </div>
             <h1>Output for Stocks</h1>
             <form method="get" id="StockForm" action="/Stocks">
                 <label>
@@ -119,6 +67,81 @@
                 <button type="submit">Get data</button>
             </form>
             <div id="StockResult" class="row"></div>
+        </div>
+        <div class="col-md-5">
+            <div id="macdInfo">
+
+                <h6>MACD - Moving Average Convergence Divergence</h6>
+
+                <p>
+                    MACD is a trend-following momentum indicator that shows the relationship between two EMAs of a security’s price.
+                </p>
+                <p>
+                    <strong>MACD Line</strong><br />
+                    Positive MACD Value: Indicates that the short-term moving average is above the long-term moving average, suggesting upward price momentum and a potential bullish trend.<br />
+                    Negative MACD Value: Implies that the short-term moving average is below the long-term moving average, pointing to downward price momentum and a potential bearish trend.<br />
+                </p>
+                <p>
+                    <strong>Signal Line</strong><br />
+                    Positive Signal Line: When the signal line is positive, it often confirms bullish momentum if the MACD line is also positive and above the signal line.<br />
+                    Negative Signal Line: A negative signal line can confirm bearish momentum if the MACD line is negative and below the signal line.<br />
+                </p>
+                <p>
+                    <strong>Histogram</strong><br />
+                    Positive Histogram Value: Indicates that the MACD line is above the signal line, which often points to bullish momentum increasing since the MACD line is moving further away from the signal line.<br />
+                    Negative Histogram Value: Suggests that the MACD line is below the signal line, often pointing to increasing bearish momentum since the MACD line is diverging further below the signal line.<br />
+                </p>
+                <h6>How is it calculated?</h6>
+
+                <p>
+                    It's typically calculated by subtracting the 26-period EMA from the 12-period EMA. This results in the MACD line.
+                    A 9-day EMA of the MACD is called the "signal line".
+                </p>
+
+            </div>
+
+            <div id="rsiInfo">
+
+                <h6>RSI - Relative Strength Index</h6>
+
+                <p>
+                    A technical indicator, used in momentum trading, that measures the speed and magnitude of a security's recent price changes.
+                    RSI oscillates between zero and 100.
+                </p>
+                <br />
+
+                <p>
+                    <img src="/photos/icons8-70-100.png" />
+                    <img src="/photos/icons8-equals-64.png" />
+                    <img src="/photos/icons8-sell-stock-96.png"/>
+                </p>
+                <br />
+
+                <p>
+                    <strong>
+                        Oversold when it's below 30:
+                    </strong> This suggests that the asset might be undervalued and could be due for a bounce or an upward correction. Traders might take this as a signal to buy the asset.
+                </p>
+                <br />
+
+                <p>
+                    <strong>
+                        Neutral between 30 and 70:
+                    </strong> The asset is considered to be in a normal range, and it's not giving any specific buy or sell signals based purely on the RSI.
+                </p>
+                <br />
+
+                <h6>How is it calculated?</h6>
+
+                <p>
+                    It's typically calculated using recent up days and down days over a 14-day period.
+                </p>
+
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
         </div>
     </div>
 </div>
