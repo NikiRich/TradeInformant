@@ -10,66 +10,88 @@
             <section>
                 <h1>Legend</h1>
 
-                <h6>SMA - Simple Movement Average</h6>
+                <div id="smaInfo">
 
-                <p>
-                    SMA is an average of a stock's closing prices over a specified period of time.
-                </p>
+                    <h6>SMA - Simple Movement Average</h6>
 
-                <h6>How is it calculated?</h6>
+                    <p>
+                        SMA is an average of a stock's closing prices over a specified period of time.
+                    </p>
 
-                <p>
-                    It's simply the sum of the closing prices over the number of periods dived by
-                    that number of periods.
-                </p>
+                    <h6>How is it calculated?</h6>
 
-                <h6>EMA - Exponential Movement Average</h6>
+                    <p>
+                        It's simply the sum of the closing prices over the number of periods dived by
+                        that number of periods.
+                    </p>
 
-                <p>
-                    Same as SMA but EMA puts more weight on recent prices and thus making it more
-                    responsive to recent price changes.
-                </p>
+                </div>
 
-                <h6>How is it calculated?</h6>
+                <div id="emaInfo">
 
-                <p>
-                    It's a weighted averege that factors in the most recent price changes compared
-                </p>
+                    <h6>EMA - Exponential Movement Average</h6>
 
-                <h6>MACD - Moving Average Convergence Divergence</h6>
+                    <p>
+                        Same as SMA but EMA puts more weight on recent prices and thus making it more
+                        responsive to recent price changes.
+                    </p>
 
-                <p>
-                    MACD is a trend-following momentum indicator that shows the relationship between two EMAs of a security’s price.
-                </p>
+                    <h6>How is it calculated?</h6>
 
-                <h6>How is it calculated?</h6>
+                    <p>
+                        It's a weighted averege that factors in the most recent price changes compared
+                    </p>
 
-                <p>
-                    It's typically calculated by subtracting the 26-period EMA from the 12-period EMA. This results in the MACD line.
-                    A 9-day EMA of the MACD is called the "signal line".
-                </p>
+                </div>
 
-                <h6>RSI - Relative Strength Index</h6>
+                <div id="macdInfo">
 
-                <p>
-                    A technical indicator, used in momentum trading, that measures the speed and magnitude of a security's recent price changes.
-                    RSI oscillates between zero and 100.
-                    <br />
-                    <strong>
-                        Overbought when it's above 70:</strong> 
-                        This means that the asset might be overvalued and could be primed for a pullback or a decline. Traders sometimes take this as a signal to sell or short the asset.
-                    <br />
-                    <strong>Oversold when it's below 30:</strong> This suggests that the asset might be undervalued and could be due for a bounce or an upward correction. Traders might take this as a signal to buy the asset.
-                    <br />
-                    <strong>Neutral between 30 and 70:</strong> The asset is considered to be in a normal range, and it's not giving any specific buy or sell signals based purely on the RSI.
-                </p>
+                    <h6>MACD - Moving Average Convergence Divergence</h6>
 
-                <h6>How is it calculated?</h6>
+                    <p>
+                        MACD is a trend-following momentum indicator that shows the relationship between two EMAs of a security’s price.
+                    </p>
 
-                <p>
-                    It's typically calculated using recent up days and down days over a 14-day period.
-                </p>
+                    <h6>How is it calculated?</h6>
+
+                    <p>
+                        It's typically calculated by subtracting the 26-period EMA from the 12-period EMA. This results in the MACD line.
+                        A 9-day EMA of the MACD is called the "signal line".
+                    </p>
+
+                </div>
+
+                <div id="rsiInfo">
+
+                    <h6>RSI - Relative Strength Index</h6>
+
+                    <p>
+                        A technical indicator, used in momentum trading, that measures the speed and magnitude of a security's recent price changes.
+                        RSI oscillates between zero and 100.
+                        <br />
+                        <strong>
+                            Overbought when it's above 70:
+                        </strong> This means that the asset might be overvalued and could be primed for a pullback or a decline. Traders sometimes take this as a signal to sell or short the asset.
+                        <br />
+                        <strong>
+                            Oversold when it's below 30:
+                        </strong> This suggests that the asset might be undervalued and could be due for a bounce or an upward correction. Traders might take this as a signal to buy the asset.
+                        <br />
+                        <strong>
+                            Neutral between 30 and 70:
+                        </strong> The asset is considered to be in a normal range, and it's not giving any specific buy or sell signals based purely on the RSI.
+                    </p>
+
+                    <h6>How is it calculated?</h6>
+
+                    <p>
+                        It's typically calculated using recent up days and down days over a 14-day period.
+                    </p>
+
+                </div>
+
             </section>
+
         </div>
         <div class="col-md-8">
             <h1>Stock Output</h1>
