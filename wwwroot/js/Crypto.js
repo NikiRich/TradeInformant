@@ -2,20 +2,20 @@
     event.preventDefault();
 
     const cryptoName = document.getElementById("cryptoName").value;
-    const interval = document.getElementById("interval").value;
+    const Interval = document.getElementById("Interval").value;
     const market = "CNY";
-    const periods = parseInt(document.getElementById("periods").value);
+    const Periods = parseInt(document.getElementById("Periods").value);
 
-    if (isNaN(periods) || periods < 1 || periods > 100) {
-        alert("Please enter a valid number of periods.");
+    if (isNaN(Periods) || Periods < 1 || Periods > 100) {
+        alert("Please enter a valid number of Periods.");
         return;
     }
 
     const query = new URLSearchParams({
         cryptoName: cryptoName, 
-        interval: interval,
+        Interval: Interval,
         market: market,
-        periods: periods
+        Periods: Periods
     });
 
     fetch("/Cryptos?" + query.toString())
@@ -28,20 +28,20 @@
             return response.json();
         })
         .then(data => {
-            displayCrypto(data, interval, periods); 
+            displayCrypto(data, Interval, Periods); 
         })
         .catch(error => {
             console.error("Error:", error);
         });
 });
 
-function displayCrypto(data, interval, periods) {
+function displayCrypto(data, Interval, Periods) {
     console.log(data);
     const output = document.getElementById("CryptoResult");
     output.innerHTML = "";
 
     let timeSeriesDate;
-    switch (interval) {
+    switch (Interval) {
         case "Daily":
             timeSeriesDate = "Time Series (Digital Currency Daily)";
             break;
@@ -52,17 +52,17 @@ function displayCrypto(data, interval, periods) {
             timeSeriesDate = "Time Series (Digital Currency Monthly)";
             break;
         default:
-            alert("Please select a valid interval.");
+            alert("Please select a valid Interval.");
             return;
     }
 
     const timeSeries = data[timeSeriesDate];
     if (!timeSeries) {
-        alert("No data available for the selected interval.");
+        alert("No data available for the selected Interval.");
         return;
     }
 
-    const dates = Object.keys(timeSeries).slice(0, periods);
+    const dates = Object.keys(timeSeries).slice(0, Periods);
     for (const date of dates) {
         const cryptoInfo = timeSeries[date];
         output.innerHTML += `

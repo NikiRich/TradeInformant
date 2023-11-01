@@ -12,9 +12,9 @@ namespace TradeInformant.Pages
     public class CryptoModel : PageModel
     {
         public string? cryptoName { get; set; }
-        public string? interval { get; set; }
+        public string? Interval { get; set; }
         public string? market { get; set; }
-        public int periods { get; set; }
+        public int Periods { get; set; }
 
         private readonly IWebHostEnvironment _env;
 
@@ -39,17 +39,17 @@ namespace TradeInformant.Pages
 
 
 
-        public string GetCacheFileName(string cryptoName, string interval)
+        public string GetCacheFileName(string cryptoName, string Interval)
         {
-            var fileName = $"cache_{cryptoName}_{interval}.json";
+            var fileName = $"cache_{cryptoName}_{Interval}.json";
             return Path.Combine(CacheDirectory, fileName);
         }
 
 
 
-        public Dictionary<string, dynamic> LoadCacheFromFile(string cryptoName, string interval)
+        public Dictionary<string, dynamic> LoadCacheFromFile(string cryptoName, string Interval)
         {
-            string filePath = GetCacheFileName(cryptoName, interval);
+            string filePath = GetCacheFileName(cryptoName, Interval);
 
             if (System.IO.File.Exists(filePath))
             {
@@ -66,7 +66,7 @@ namespace TradeInformant.Pages
 
 
 
-        public void SaveCacheToFile(Dictionary<string, dynamic> data, string cryptoName, string interval)
+        public void SaveCacheToFile(Dictionary<string, dynamic> data, string cryptoName, string Interval)
         {
             var cacheEntry = new CacheEntry
             {
@@ -74,7 +74,7 @@ namespace TradeInformant.Pages
                 Timestamp = DateTime.UtcNow
             };
 
-            string filePath = GetCacheFileName(cryptoName, interval);
+            string filePath = GetCacheFileName(cryptoName, Interval);
 
             lock (filePath)
             {
@@ -83,24 +83,24 @@ namespace TradeInformant.Pages
         }
 
 
-        public IActionResult OnGet(string? cryptoName, string? interval, string? market, int? periods)
+        public IActionResult OnGet(string? cryptoName, string? Interval, string? market, int? Periods)
         {
-            if (cryptoName == null || interval == null || periods == null)
+            if (cryptoName == null || Interval == null || Periods == null)
             {
                 Console.WriteLine($"Parameters are missing");
                 return Page();
             }
 
             this.cryptoName = cryptoName;
-            this.interval = interval;
+            this.Interval = Interval;
             this.market = market;
-            this.periods = (int)periods;
+            this.Periods = (int)Periods;
 
             const string API_KEY = "1F6SLA57L4NZM1DR";
 
             string function;
 
-            switch (interval)
+            switch (Interval)
             {
                 case "Daily":
                     function = "DIGITAL_CURRENCY_DAILY";
@@ -112,14 +112,14 @@ namespace TradeInformant.Pages
                     function = "DIGITAL_CURRENCY_MONTHLY";
                     break;
                 default:
-                    return new BadRequestObjectResult($"Invalid interval: {interval}");
+                    return new BadRequestObjectResult($"Invalid Interval: {Interval}");
             }
 
 
             string url = $"https://www.alphavantage.co/query?function={function}&symbol={cryptoName}&market={market}&apikey={API_KEY}";
             Uri uri = new Uri(url);
 
-            Dictionary<string, dynamic> jsonInfo = LoadCacheFromFile(cryptoName, interval);
+            Dictionary<string, dynamic> jsonInfo = LoadCacheFromFile(cryptoName, Interval);
 
             if (jsonInfo == null)
             {
@@ -131,16 +131,16 @@ namespace TradeInformant.Pages
 
                         if (jsonInfo == null)
                         {
-                            Console.WriteLine($"Interval: {interval}, cryptoName: {cryptoName}, Market: {market}");
+                            Console.WriteLine($"Interval: {Interval}, cryptoName: {cryptoName}, Market: {market}");
                             return new BadRequestObjectResult("Error retrieving data for the particular cryptocurrency or invalid data format");
                         }
 
-                        SaveCacheToFile(jsonInfo, cryptoName, interval);
+                        SaveCacheToFile(jsonInfo, cryptoName, Interval);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error fetching cryptocurrency data for {cryptoName} with interval {interval} and market {market}: {ex.Message}");
+                    Console.WriteLine($"Error fetching cryptocurrency data for {cryptoName} with Interval {Interval} and market {market}: {ex.Message}");
                     return new BadRequestObjectResult("Error fetching cryptocurrency data. Please try again later.");
                 }
             }

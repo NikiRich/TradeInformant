@@ -8,9 +8,9 @@ namespace TradeInformant.Pages
 {
     public class StocksModel : PageModel
     {
-        public string? stockName { get; set; }
-        public string? interval { get; set; }
-        public int periods { get; set; }
+        public string? StockName { get; set; }
+        public string? Interval { get; set; }
+        public int Periods { get; set; }
 
 
         private readonly IWebHostEnvironment _env;
@@ -36,17 +36,17 @@ namespace TradeInformant.Pages
 
 
 
-        public string GetCacheFileName(string stockName, string interval)
+        public string GetCacheFileName(string StockName, string Interval)
         {
-            var fileName = $"cache_{stockName}_{interval}.json";
+            var fileName = $"cache_{StockName}_{Interval}.json";
             return Path.Combine(CacheDirectory, fileName);
         }
 
 
 
-        public Dictionary<string, dynamic>? LoadCacheFromFile(string stockName, string interval)
+        public Dictionary<string, dynamic>? LoadCacheFromFile(string StockName, string Interval)
         {
-            string filePath = GetCacheFileName(stockName, interval);
+            string filePath = GetCacheFileName(StockName, Interval);
 
             if (System.IO.File.Exists(filePath))
             {
@@ -62,7 +62,7 @@ namespace TradeInformant.Pages
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error reading or deserializing cache for {stockName} - {interval}: {e.Message}");
+                    Console.WriteLine($"Error reading or deserializing cache for {StockName} - {Interval}: {e.Message}");
                 }
             }
             return null;
@@ -72,7 +72,7 @@ namespace TradeInformant.Pages
 
 
 
-        public void SaveCacheToFile(Dictionary<string, dynamic> data, string stockName, string interval)
+        public void SaveCacheToFile(Dictionary<string, dynamic> data, string StockName, string Interval)
         {
             var cacheEntry = new CacheEntry
             {
@@ -80,7 +80,7 @@ namespace TradeInformant.Pages
                 Timestamp = DateTime.UtcNow
             };
 
-            string filePath = GetCacheFileName(stockName, interval);
+            string filePath = GetCacheFileName(StockName, Interval);
 
             lock (filePath)
             {
@@ -90,22 +90,22 @@ namespace TradeInformant.Pages
 
 
 
-        public IActionResult OnGet(string? stockName, string? interval, int? periods)
+        public IActionResult OnGet(string? StockName, string? Interval, int? Periods)
         {
-            if (stockName == null || interval == null || periods == null)
+            if (StockName == null || Interval == null || Periods == null)
             {
                 return Page();
             }
 
-            this.stockName = stockName;
-            this.interval = interval;
-            this.periods = (int)periods;
+            this.StockName = StockName;
+            this.Interval = Interval;
+            this.Periods = (int)Periods;
 
             const string API_KEY = "1F6SLA57L4NZM1DR";
 
             string function;
 
-            switch (interval)
+            switch (Interval)
             {
                 case "Daily":
                     function = "TIME_SERIES_DAILY";
@@ -117,14 +117,14 @@ namespace TradeInformant.Pages
                     function = "TIME_SERIES_MONTHLY";
                     break;
                 default:
-                    return new BadRequestObjectResult($"Invalid interval: {interval}");
+                    return new BadRequestObjectResult($"Invalid Interval: {Interval}");
             }
 
 
-            string url = $"https://www.alphavantage.co/query?function={function}&symbol={stockName}&apikey={API_KEY}";
+            string url = $"https://www.alphavantage.co/query?function={function}&symbol={StockName}&apikey={API_KEY}";
             Uri uri = new Uri(url);
 
-            Dictionary<string, dynamic>? jsonInfo = LoadCacheFromFile(stockName, interval);
+            Dictionary<string, dynamic>? jsonInfo = LoadCacheFromFile(StockName, Interval);
 
             if (jsonInfo == null)
             {
@@ -136,16 +136,16 @@ namespace TradeInformant.Pages
 
                         if (jsonInfo == null)
                         {
-                            Console.WriteLine($"Interval: {interval}, stockName: {stockName}");
+                            Console.WriteLine($"Interval: {Interval}, StockName: {StockName}");
                             return new BadRequestObjectResult("Error retrieving data for the particular stock or invalid data format");
                         }
 
-                        SaveCacheToFile(jsonInfo, stockName, interval);
+                        SaveCacheToFile(jsonInfo, StockName, Interval);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error fetching stock data for {stockName} with interval {interval}: {ex.Message}");
+                    Console.WriteLine($"Error fetching stock data for {StockName} with Interval {Interval}: {ex.Message}");
                     return new BadRequestObjectResult("Error fetching stock data. Please try again later.");
                 }
             }

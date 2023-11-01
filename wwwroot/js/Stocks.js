@@ -1,24 +1,24 @@
-﻿// Add an event listener for the form submission.
+﻿//An event listener for the form submission.
 document.getElementById("StockForm").addEventListener("submit", function (event) {
     // Prevent the default form submission behavior.
     event.preventDefault();
 
     // Get the input values from the form.
-    const stockName = document.getElementById("stockName").value;
-    const interval = document.getElementById("interval").value;
-    const periods = parseInt(document.getElementById("periods").value);
+    const StockName = document.getElementById("StockName").value;
+    const Interval = document.getElementById("Interval").value;
+    const Periods = parseInt(document.getElementById("Periods").value);
 
     // Validate the period input.
-    if (isNaN(periods) || periods < 1 || periods > 100) {
-        alert("Please enter a valid number of periods.");
+    if (isNaN(Periods) || Periods < 1 || Periods > 100) {
+        alert("Please enter a valid number of Periods.");
         return;
     }
 
     // Prepare the query parameters for the fetch request.
     const query = new URLSearchParams({
-        stockName: stockName,
-        interval: interval,
-        periods: periods
+        StockName: StockName,
+        Interval: Interval,
+        Periods: Periods
     });
 
     // Make a fetch request to the server with the query parameters.
@@ -34,16 +34,16 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
             return response.json();
         })
         .then(data => {
-            // Extract the time series data based on the selected interval.
-            const timeSeries = getTimeSeries(data, interval);
+            // Extract the time series data based on the selected Interval.
+            const timeSeries = getTimeSeries(data, Interval);
 
             // Compute SMA and EMA values.
-            const SMA = computeSMA(timeSeries, periods);
-            const EMA = computeEMA(timeSeries, periods);
-            const RSI = computeRSI(timeSeries, periods);
+            const SMA = computeSMA(timeSeries, Periods);
+            const EMA = computeEMA(timeSeries, Periods);
+            const RSI = computeRSI(timeSeries, Periods);
             const MACD = computeMACD(timeSeries);
             // Display the stock information.
-            displayStock(data, interval, periods, SMA, EMA, RSI, MACD);
+            displayStock(data, Interval, Periods, SMA, EMA, RSI, MACD);
         })
         .catch(error => {
             // Handle any errors that occurred during the fetch.
@@ -52,9 +52,9 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
 });
 
 
-// Get the time series data based on the selected interval.
-function getTimeSeries(data, interval) {
-    switch (interval) {
+// Get the time series data based on the selected Interval.
+function getTimeSeries(data, Interval) {
+    switch (Interval) {
         case "Daily":
             return data["Time Series (Daily)"];
         case "Weekly":
@@ -62,25 +62,25 @@ function getTimeSeries(data, interval) {
         case "Monthly":
             return data["Monthly Time Series"];
         default:
-            alert("Please select a valid interval.");
+            alert("Please select a valid Interval.");
             return;
     }
 }
 
 
 // Compute the Simple Moving Average (SMA) for the given period.
-function computeSMA(timeSeries, periods) {
+function computeSMA(timeSeries, Periods) {
     // If the timeSeries data is not available, return null.
     if (!timeSeries) return null;
     // Extract closing prices and calculate the average.
-    const closingPrices = Object.values(timeSeries).slice(0, periods).map(day => parseFloat(day["4. close"]));
+    const closingPrices = Object.values(timeSeries).slice(0, Periods).map(day => parseFloat(day["4. close"]));
     const sum = closingPrices.reduce((acc, price) => acc + price, 0);
-    return sum / periods;
+    return sum / Periods;
 }
 
 
 // Compute the Exponential Moving Average (EMA) for the given period.
-function computeEMA(input, periods) {
+function computeEMA(input, Periods) {
     let closingPrices;
 
     // Check if input is an array, then use it directly as the closing prices.
@@ -94,17 +94,17 @@ function computeEMA(input, periods) {
         return null;
     }
 
-    // Calculate the initial Simple Moving Average (SMA) for the given periods.
-    const initialSMA = closingPrices.slice(0, periods).reduce((acc, price) => acc + price, 0) / periods;
+    // Calculate the initial Simple Moving Average (SMA) for the given Periods.
+    const initialSMA = closingPrices.slice(0, Periods).reduce((acc, price) => acc + price, 0) / Periods;
 
     // Initialize the EMA array with the initial SMA value.
     let EMA = [initialSMA];
 
     // Calculate the multiplier for the EMA calculation.
-    const multiplier = 2 / (periods + 1);
+    const multiplier = 2 / (Periods + 1);
 
     // Calculate the EMA for each subsequent closing price.
-    for (let i = periods; i < closingPrices.length; i++) {
+    for (let i = Periods; i < closingPrices.length; i++) {
         const newEMA = (closingPrices[i] - EMA[EMA.length - 1]) * multiplier + EMA[EMA.length - 1];
         EMA.push(newEMA);
     }
@@ -115,7 +115,7 @@ function computeEMA(input, periods) {
 
 
 
-function computeRSI(timeSeries, periods) {
+function computeRSI(timeSeries, Periods) {
     let gains = [];
     let losses = [];
 
@@ -129,8 +129,8 @@ function computeRSI(timeSeries, periods) {
     }
 
     // Calculate the average gain and average loss for the first N days.
-    let avgGain = gains.slice(0, periods).reduce((acc, gain) => acc + gain, 0) / periods;
-    let avgLoss = losses.slice(0, periods).reduce((acc, loss) => acc + loss, 0) / periods;
+    let avgGain = gains.slice(0, Periods).reduce((acc, gain) => acc + gain, 0) / Periods;
+    let avgLoss = losses.slice(0, Periods).reduce((acc, loss) => acc + loss, 0) / Periods;
 
     // Calculate the initial RSI value.
     let RS = avgGain / avgLoss;
@@ -140,9 +140,9 @@ function computeRSI(timeSeries, periods) {
     let RSI = [initialRSI];
 
     // Calculate the RSI for the remaining days.
-    for (let i = periods; i < gains.length; i++) {
-        avgGain = ((avgGain * (periods - 1)) + gains[i]) / periods;
-        avgLoss = ((avgLoss * (periods - 1)) + losses[i]) / periods;
+    for (let i = Periods; i < gains.length; i++) {
+        avgGain = ((avgGain * (Periods - 1)) + gains[i]) / Periods;
+        avgLoss = ((avgLoss * (Periods - 1)) + losses[i]) / Periods;
 
         RS = avgGain / avgLoss;
         let currentRSI = 100 - (100 / (1 + RS));
@@ -188,13 +188,13 @@ function computeMACD(timeSeries) {
 }
 
 // Display stock data, SMA, and EMA on the web page.
-function displayStock(data, interval, periods, SMA, EMA, RSI, MACD) {
+function displayStock(data, Interval, Periods, SMA, EMA, RSI, MACD) {
     const output = document.getElementById("StockResult");
 
     let timeSeriesDate;
 
-    // Determine the time series data based on the selected interval.
-    switch (interval) {
+    // Determine the time series data based on the selected Interval.
+    switch (Interval) {
         case "Daily":
             timeSeriesDate = "Time Series (Daily)";
             break;
@@ -205,20 +205,20 @@ function displayStock(data, interval, periods, SMA, EMA, RSI, MACD) {
             timeSeriesDate = "Monthly Time Series";
             break;
         default:
-            alert("Please select a valid interval.");
+            alert("Please select a valid Interval.");
             return;
     }
 
-    // Extract the time series data for the selected interval.
+    // Extract the time series data for the selected Interval.
     const timeSeries = data[timeSeriesDate];
 
     if (!timeSeries) {
-        alert("No data available for the selected interval.");
+        alert("No data available for the selected Interval.");
         return;
     }
 
     // Extract the first N dates from the time series data.
-    const dates = Object.keys(timeSeries).slice(0, periods);
+    const dates = Object.keys(timeSeries).slice(0, Periods);
 
     let lastMACDValue = (MACD.MACD && MACD.MACD.length > 0) ? MACD.MACD[MACD.MACD.length - 1].toFixed(2) : "N/A";
     let signalLineValue = (MACD.signalLine && MACD.signalLine.length > 0) ? MACD.signalLine[MACD.signalLine.length - 1].toFixed(2) : "N/A";
