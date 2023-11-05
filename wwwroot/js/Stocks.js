@@ -246,6 +246,7 @@ function displayStock(data, Interval, Periods, SMA, EMA, RSI, MACD) {
 
     // Display each stock data entry in a card format.
     for (const date of dates) {
+        // Extract the stock information for the current date.
         const stockInfo = timeSeries[date];
         output.innerHTML += `
         <div class="col-md-3">
