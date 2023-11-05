@@ -23,6 +23,7 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
 
     // Make a fetch request to the server with the query parameters.
     fetch("/Stocks?" + query.toString())
+        // Return the response as JSON if the request was successful.
         .then(response => {
             if (!response.ok) {
                 // If there's an error, reject the promise.
@@ -33,6 +34,7 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
             // Parse the JSON response.
             return response.json();
         })
+        // If the response was successful, display the stock information.
         .then(data => {
             // Extract the time series data based on the selected Interval.
             const timeSeries = getTimeSeries(data, Interval);
