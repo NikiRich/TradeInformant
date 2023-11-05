@@ -56,10 +56,13 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
 function getTimeSeries(data, Interval) {
     switch (Interval) {
         case "Daily":
+            // For daily data, use the "Time Series (Daily)" key.
             return data["Time Series (Daily)"];
         case "Weekly":
+            // For weekly data, use the "Weekly Time Series" key.
             return data["Weekly Time Series"];
         case "Monthly":
+            // For monthly data, use the "Monthly Time Series" key.
             return data["Monthly Time Series"];
         default:
             alert("Please select a valid Interval.");
@@ -196,12 +199,15 @@ function displayStock(data, Interval, Periods, SMA, EMA, RSI, MACD) {
     // Determine the time series data based on the selected Interval.
     switch (Interval) {
         case "Daily":
+            // For daily data, use the "Time Series (Daily)" key.
             timeSeriesDate = "Time Series (Daily)";
             break;
         case "Weekly":
+            // For weekly data, use the "Weekly Time Series" key.
             timeSeriesDate = "Weekly Time Series";
             break;
         case "Monthly":
+            // For monthly data, use the "Monthly Time Series" key.
             timeSeriesDate = "Monthly Time Series";
             break;
         default:
