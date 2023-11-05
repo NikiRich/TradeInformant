@@ -37,7 +37,7 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
             // Extract the time series data based on the selected Interval.
             const timeSeries = getTimeSeries(data, Interval);
 
-            // Compute SMA and EMA values.
+            // Compute SMA, EMA, RSI, and MACD.
             const SMA = computeSMA(timeSeries, Periods);
             const EMA = computeEMA(timeSeries, Periods);
             const RSI = computeRSI(timeSeries, Periods);
