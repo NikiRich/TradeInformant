@@ -22,7 +22,7 @@ namespace TradeInformant.Pages
         private string CacheDirectory => Path.Combine(_env.ContentRootPath, "CachedFiles");
 
 
-        // Constructor
+        // Interface that provides information about the web hosting environment an application is running in
         public StocksModel(IWebHostEnvironment env)
         {
             _env = env;
@@ -97,7 +97,7 @@ namespace TradeInformant.Pages
             // Get the path to the cache file
             string filePath = GetCacheFileName(StockName, Interval);
 
-            // Write the cache to the file
+            // Write the cache to the file in a thread-safe manner
             lock (filePath)
             {
                 System.IO.File.WriteAllText(filePath, JsonSerializer.Serialize(cacheEntry));
@@ -115,6 +115,7 @@ namespace TradeInformant.Pages
                 return Page();
             }
 
+            // Store the parameters
             this.StockName = StockName;
             this.Interval = Interval;
             this.Periods = (int)Periods;
@@ -141,9 +142,9 @@ namespace TradeInformant.Pages
                     return new BadRequestObjectResult($"Invalid Interval: {Interval}");
             }
 
-            // Create the URL
+            // Create the URL to fetch the data
             string url = $"https://www.alphavantage.co/query?function={function}&symbol={StockName}&apikey={API_KEY}";
-            // Create the URI
+            // Create the URI to have the URL in a proper format
             Uri uri = new Uri(url);
 
             // Load the cache from the file
