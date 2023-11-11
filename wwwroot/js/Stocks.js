@@ -46,7 +46,16 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
             const MACD = ComputeMACD(timeSeries);
             // Display the stock information.
             DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD);
+
+            // Send the data to the server for MLA.
+            return DataForMLA(SMA, EMA, RSI, MACD.MACD, MACD.signalLine, MACD.histogram);
         })
+
+        // Display the prediction.
+        .then(predictionData => {
+            DisplayPrediction(predictionData);
+        })
+        // If the response was not successful, display the error.
         .catch(error => {
             // Handle any errors that occurred during the fetch.
             console.error("Error:", error);
@@ -193,7 +202,7 @@ function ComputeMACD(timeSeries) {
 }
 
 // Display stock data, SMA, and EMA on the web page.
-function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD) {
+function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction) {
     const output = document.getElementById("StockResult");
 
     let timeSeriesDate;
@@ -287,12 +296,12 @@ function DataForMLA(SMA, EMA, RSI, MACD, signalLine, histogram) {
     })
 
         .then(response => response.json())
-        .then(data => {
-            const prediction = data.prediction;
-            DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction)
-        })
         .catch(error => {
             // Handle any errors that occurred during the fetch.
             console.error("Error:", error);
         });
+}
+
+function DisplayPrediction(predictionData) {
+    DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, predictionData.prediction)
 }
