@@ -242,6 +242,7 @@ function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD) {
         <p><strong>MACD:</strong> ${lastMACDValue}</p>
         <p><strong>Signal Line:</strong> ${signalLineValue}</p>
         <p><strong>Histogram:</strong> ${histogramValue}</p>
+        <p><strong>Prediction:</strong> ${prediction}</p>
     </div>
     `;
 
@@ -277,7 +278,7 @@ function DataForMLA(SMA, EMA, RSI, MACD, signalLine, histogram) {
         histogram: histogram
     };
 
-    fetch("/Stocks?handler=Prediction", {
+    fetch("/Stocks?handler=PredictionCalculation", {
         method: "POST",
         headers: {
             'Content-Type': 'application/json;charset=utf-8'
@@ -285,4 +286,13 @@ function DataForMLA(SMA, EMA, RSI, MACD, signalLine, histogram) {
         body: JSON.stringify(indicators)
     })
 
+        .then(response => response.json())
+        .then(data => {
+            const prediction = data.prediction;
+            DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction)
+        })
+        .catch(error => {
+            // Handle any errors that occurred during the fetch.
+            console.error("Error:", error);
+        });
 }
