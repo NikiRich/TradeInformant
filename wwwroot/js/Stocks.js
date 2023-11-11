@@ -37,15 +37,15 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
         // If the response was successful, display the stock information.
         .then(data => {
             // Extract the time series data based on the selected Interval.
-            const timeSeries = getTimeSeries(data, Interval);
+            const timeSeries = GetTimeSeries(data, Interval);
 
             // Compute SMA, EMA, RSI, and MACD.
-            const SMA = computeSMA(timeSeries, Periods);
-            const EMA = computeEMA(timeSeries, Periods);
-            const RSI = computeRSI(timeSeries, Periods);
-            const MACD = computeMACD(timeSeries);
+            const SMA = ComputeSMA(timeSeries, Periods);
+            const EMA = ComputeEMA(timeSeries, Periods);
+            const RSI = ComputeRSI(timeSeries, Periods);
+            const MACD = ComputeMACD(timeSeries);
             // Display the stock information.
-            displayStock(data, Interval, Periods, SMA, EMA, RSI, MACD);
+            DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD);
         })
         .catch(error => {
             // Handle any errors that occurred during the fetch.
@@ -55,7 +55,7 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
 
 
 // Get the time series data based on the selected Interval.
-function getTimeSeries(data, Interval) {
+function GetTimeSeries(data, Interval) {
     switch (Interval) {
         case "Daily":
             // For daily data, use the "Time Series (Daily)" key.
@@ -74,7 +74,7 @@ function getTimeSeries(data, Interval) {
 
 
 // Compute the Simple Moving Average (SMA) for the given period.
-function computeSMA(timeSeries, Periods) {
+function ComputeSMA(timeSeries, Periods) {
     // If the timeSeries data is not available, return null.
     if (!timeSeries) return null;
     // Extract closing prices and calculate the average.
@@ -85,7 +85,7 @@ function computeSMA(timeSeries, Periods) {
 
 
 // Compute the Exponential Moving Average (EMA) for the given period.
-function computeEMA(input, Periods) {
+function ComputeEMA(input, Periods) {
     let closingPrices;
 
     // Check if input is an array, then use it directly as the closing prices.
@@ -120,7 +120,7 @@ function computeEMA(input, Periods) {
 
 
 
-function computeRSI(timeSeries, Periods) {
+function ComputeRSI(timeSeries, Periods) {
     let gains = [];
     let losses = [];
 
@@ -158,12 +158,12 @@ function computeRSI(timeSeries, Periods) {
 }
 
 // Compute the Moving Average Convergence Divergence (MACD) for the given period.
-function computeMACD(timeSeries) {
+function ComputeMACD(timeSeries) {
     const closingPrices = Object.values(timeSeries).map(day => parseFloat(day["4. close"]));
 
     //Compute the 12-period EMA and 26-period EMA
-    let shortEMA = computeEMA(timeSeries, 12);
-    let longEMA = computeEMA(timeSeries, 26);
+    let shortEMA = ComputeEMA(timeSeries, 12);
+    let longEMA = ComputeEMA(timeSeries, 26);
 
     //Compute MACD Line
     let MACD = [];
@@ -175,7 +175,7 @@ function computeMACD(timeSeries) {
     }
 
     //Compute Signal Line
-    let signalLine = computeEMA(MACD, 9);
+    let signalLine = ComputeEMA(MACD, 9);
 
     //Compute MACD Histogram
     let histogram = [];
@@ -193,7 +193,7 @@ function computeMACD(timeSeries) {
 }
 
 // Display stock data, SMA, and EMA on the web page.
-function displayStock(data, Interval, Periods, SMA, EMA, RSI, MACD) {
+function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD) {
     const output = document.getElementById("StockResult");
 
     let timeSeriesDate;
@@ -228,6 +228,7 @@ function displayStock(data, Interval, Periods, SMA, EMA, RSI, MACD) {
     // Extract the first N dates from the time series data.
     const dates = Object.keys(timeSeries).slice(0, Periods);
 
+    // Extract the stock information for the latest date.
     let lastMACDValue = (MACD.MACD && MACD.MACD.length > 0) ? MACD.MACD[MACD.MACD.length - 1].toFixed(2) : "N/A";
     let signalLineValue = (MACD.signalLine && MACD.signalLine.length > 0) ? MACD.signalLine[MACD.signalLine.length - 1].toFixed(2) : "N/A";
     let histogramValue = (MACD.histogram && MACD.histogram.length > 0) ? MACD.histogram[MACD.histogram.length - 1].toFixed(2) : "N/A";
@@ -264,4 +265,24 @@ function displayStock(data, Interval, Periods, SMA, EMA, RSI, MACD) {
         </div>
         `;
     }
+}
+
+function DataForMLA(SMA, EMA, RSI, MACD, signalLine, histogram) {
+    const indicators = {
+        SMA: SMA,
+        EMA: EMA,
+        RSI: RSI,
+        MACD: MACD,
+        signalLine: signalLine,
+        histogram: histogram
+    };
+
+    fetch("/Stocks?handler=Prediction", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json;charset=utf-8'
+        },
+        body: JSON.stringify(indicators)
+    })
+
 }
