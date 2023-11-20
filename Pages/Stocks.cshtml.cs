@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System;
 using System.Net;
 using System.Text.Json;
-
+using System.Threading.Tasks;
 
 namespace TradeInformant.Pages
 {
@@ -17,7 +18,7 @@ namespace TradeInformant.Pages
 
         // Duration for which the cached files are valid
         private static readonly TimeSpan CacheDuration = TimeSpan.FromDays(7);
-        
+
         // Path to the directory where cached files are stored
         private string CacheDirectory => Path.Combine(_env.ContentRootPath, "CachedFiles");
 
@@ -183,5 +184,333 @@ namespace TradeInformant.Pages
             // Return the data
             return new JsonResult(jsonInfo);
         }
+
+        // DTO for indicators
+        public class Indicators
+        {
+            public decimal SMA { get; set; }
+            public decimal EMA { get; set; }
+            public decimal RSI { get; set; }
+            public decimal MACD { get; set; }
+            public decimal signalLine { get; set; }
+            public decimal histogram { get; set; }
+        }
+        // Method to save the trained CART model to a file
+        private void SaveModelToFile(CART cart)
+        {
+            // Path to the model file
+            var modelPath = Path.Combine(_env.ContentRootPath, "Model", "cart_model.json");
+
+            // Serialize the model to JSON
+            var modelJson = JsonSerializer.Serialize(cart);
+
+            // Write the JSON to the file, overwriting any existing file
+            System.IO.File.WriteAllText(modelPath, modelJson);
+        }
+
+        // Method to load the trained CART model from a file
+        private CART LoadModelFromFile()
+        {
+            // Path to the model file
+            var modelPath = Path.Combine(_env.ContentRootPath, "Model", "cart_model.json");
+
+            // Check if the model file exists
+            if (System.IO.File.Exists(modelPath))
+            {
+                // Read the JSON from the file
+                var modelJson = System.IO.File.ReadAllText(modelPath);
+
+                // Deserialize the JSON to a CART object
+                return JsonSerializer.Deserialize<CART>(modelJson);
+            }
+
+            // If the file does not exist, return null indicating no model is loaded
+            return null;
+        }
+
+        // This method is for training the model with provided training data.
+        public IActionResult OnGetTrainModel([FromQuery] TrainingData trainingData)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Convert the training data into the expected format for the CART algorithm
+            List<Dictionary<string, double>> features = trainingData.Features;
+            List<string> labels = trainingData.Labels;
+
+            // Create an instance of the CART algorithm and train it
+            var cart = new CART();
+            cart.Train(features, labels);
+
+            // Save the trained model to a file for future predictions
+            SaveModelToFile(cart);
+
+            return new JsonResult(new { Message = "Model trained successfully" });
+        }
+
+        public IActionResult OnGetPredictionCalculation([FromQuery] Indicators indicators)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Load the trained model from a file
+            var cart = LoadModelFromFile();
+
+            // Ensure your model is trained before making predictions
+            if (cart == null)
+            {
+                return new JsonResult(new { Error = "The model is not trained or the model file is not found." });
+            }
+
+            // Convert the indicators to the expected format
+            var inputFeatures = new Dictionary<string, decimal>
+            {
+                { "SMA", indicators.SMA },
+                { "EMA", indicators.EMA },
+                { "RSI", indicators.RSI },
+                { "MACD", indicators.MACD },
+                { "signalLine", indicators.signalLine },
+                { "histogram", indicators.histogram }
+            };
+
+            // Make a prediction
+            var prediction = cart.Predict(inputFeatures);
+
+            // Return the prediction result
+            return new JsonResult(new { Prediction = prediction });
+        }
+
+
+
+        // DTO for training data
+        public class TrainingData
+        {
+            public List<Dictionary<string, double>> Features { get; set; }
+            public List<string> Labels { get; set; }
+        }
+
+
+        // Implementation of the CART algorithm
+        public class CART
+        {
+            private DecisionTreeNode _root;
+
+            public CART()
+            {
+                _root = null;
+            }
+
+            public void Train(List<Dictionary<string, double>> features, List<string> labels)
+            {
+                _root = BuildTree(features, labels);
+            }
+
+            private DecisionTreeNode BuildTree(List<Dictionary<string, double>> features, List<string> labels)
+            {
+                // Check for stopping conditions
+                if (ShouldStopSplitting(features, labels))
+                {
+                    return new DecisionTreeNode
+                    {
+                        IsLeaf = true,
+                        Prediction = labels.GroupBy(x => x).OrderByDescending(x => x.Count()).First().Key
+                    };
+                }
+
+                // Find the best feature and value to split on
+                var (bestFeature, bestValue) = FindBestSplit(features, labels);
+
+                // Partition the data into two subsets based on the best split
+                var (leftFeatures, leftLabels, rightFeatures, rightLabels) = PartitionData(features, labels, bestFeature, bestValue);
+
+                // Recursively build the tree
+                var leftChild = BuildTree(leftFeatures, leftLabels);
+                var rightChild = BuildTree(rightFeatures, rightLabels);
+
+                // Return the current node
+                return new DecisionTreeNode
+                {
+                    FeatureToSplit = bestFeature,
+                    SplitValue = (decimal)bestValue,
+                    LeftChild = leftChild,
+                    RightChild = rightChild
+                };
+            }
+            private bool ShouldStopSplitting(List<Dictionary<string, double>> features, List<string> labels)
+            {
+                // Stop if all labels are the same
+                if (labels.Distinct().Count() == 1)
+                {
+                    return true;
+                }
+
+                // Stop if there are no features left to split on
+                if (features.Count == 0 || features.All(f => f.Count == 0))
+                {
+                    return true;
+                }
+
+                // Additional stopping conditions like maximum tree depth or minimum node size can be added here
+
+                // If none of the stopping conditions are met, do not stop splitting
+                return false;
+            }
+
+            private (string bestFeature, double bestValue) FindBestSplit(List<Dictionary<string, double>> features, List<string> labels)
+            {
+                double bestGain = double.MinValue;
+                string bestFeature = null;
+                double bestValue = double.NaN;
+
+                // Iterate over every feature
+                foreach (var feature in features.SelectMany(f => f.Keys).Distinct())
+                {
+                    // Get unique values for the feature
+                    var featureValues = features.Select(f => f[feature]).Distinct().OrderBy(x => x);
+
+                    // Test all possible split values
+                    foreach (var value in featureValues)
+                    {
+                        var gain = CalculateInformationGain(features, labels, feature, value);
+                        if (gain > bestGain)
+                        {
+                            bestGain = gain;
+                            bestFeature = feature;
+                            bestValue = value;
+                        }
+                    }
+                }
+
+                return (bestFeature, bestValue);
+            }
+
+            private (List<Dictionary<string, double>> leftFeatures, List<string> leftLabels,
+         List<Dictionary<string, double>> rightFeatures, List<string> rightLabels)
+    PartitionData(List<Dictionary<string, double>> features, List<string> labels, string feature, double value)
+            {
+                var leftFeatures = new List<Dictionary<string, double>>();
+                var leftLabels = new List<string>();
+                var rightFeatures = new List<Dictionary<string, double>>();
+                var rightLabels = new List<string>();
+
+                for (int i = 0; i < features.Count; i++)
+                {
+                    if (features[i][feature] <= value)
+                    {
+                        leftFeatures.Add(features[i]);
+                        leftLabels.Add(labels[i]);
+                    }
+                    else
+                    {
+                        rightFeatures.Add(features[i]);
+                        rightLabels.Add(labels[i]);
+                    }
+                }
+
+                return (leftFeatures, leftLabels, rightFeatures, rightLabels);
+            }
+            private double CalculateInformationGain(List<Dictionary<string, double>> features, List<string> labels, string feature, double value)
+            {
+                // Split the data
+                var (leftFeatures, leftLabels, rightFeatures, rightLabels) = PartitionData(features, labels, feature, value);
+
+                // Calculate the entropy before the split
+                double originalEntropy = Entropy(labels);
+
+                // Calculate the entropy after the split
+                double leftEntropy = Entropy(leftLabels);
+                double rightEntropy = Entropy(rightLabels);
+
+                // Calculate the weighted average of the entropy after the split
+                double weightedEntropy = ((double)leftLabels.Count / labels.Count) * leftEntropy
+                                         + ((double)rightLabels.Count / labels.Count) * rightEntropy;
+
+                // Information gain is the entropy reduction by splitting the data
+                double informationGain = originalEntropy - weightedEntropy;
+
+                return informationGain;
+            }
+
+            private double Entropy(List<string> labels)
+            {
+                // Group the labels and count occurrences
+                var labelCounts = labels.GroupBy(l => l).ToDictionary(g => g.Key, g => g.Count());
+
+                // Calculate the entropy
+                double entropy = 0.0;
+                foreach (var labelCount in labelCounts)
+                {
+                    double probability = (double)labelCount.Value / labels.Count;
+                    entropy -= probability * Math.Log(probability, 2);
+                }
+
+                return entropy;
+            }
+
+            public string Predict(Dictionary<string, decimal> inputFeatures)
+            {
+                if (_root == null)
+                {
+                    throw new InvalidOperationException("The model has not been trained.");
+                }
+                return PredictFromNode(_root, inputFeatures);
+            }
+
+            private string PredictFromNode(DecisionTreeNode node, Dictionary<string, decimal> features)
+            {
+                // Base case: if the node is a leaf, return the prediction
+                if (node.IsLeaf)
+                {
+                    return node.Prediction;
+                }
+
+                // Recursive case: traverse the tree based on the feature's value
+                if (features[node.FeatureToSplit] <= node.SplitValue)
+                {
+                    return PredictFromNode(node.LeftChild, features);
+                }
+                else
+                {
+                    return PredictFromNode(node.RightChild, features);
+                }
+            }
+        }
+
+
+        // Decision tree node class
+        public class DecisionTreeNode
+        {
+            public bool IsLeaf { get; set; }
+            public string FeatureToSplit { get; set; }
+            public decimal SplitValue { get; set; }
+            public string Prediction { get; set; }
+            public DecisionTreeNode LeftChild { get; set; }
+            public DecisionTreeNode RightChild { get; set; }
+
+            public string Predict(Dictionary<string, decimal> features)
+            {
+                if (this.IsLeaf)
+                {
+                    return this.Prediction;
+                }
+                else
+                {      
+                    if (features[this.FeatureToSplit] <= this.SplitValue)
+                    {
+                        return this.LeftChild.Predict(features);
+                    }
+                    else
+                    {
+                        return this.RightChild.Predict(features);
+                    }
+                }
+            }
+        }
+        
     }
 }
+
