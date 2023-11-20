@@ -46,18 +46,23 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
             const MACD = ComputeMACD(timeSeries);
             // Display the stock information.
             DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD);
+            
+            const indicators = {
+                SMA: SMA,
+                EMA: EMA && EMA.length > 0 ? EMA[EMA.length - 1] : null,
+                RSI: RSI && RSI.length > 0 ? RSI[RSI.length - 1] : null,
+                MACD: MACD && MACD.MACD && MACD.MACD.length > 0 ? MACD.MACD[MACD.MACD.length - 1] : null,
+                signalLine: MACD && MACD.signalLine && MACD.signalLine.length > 0 ? MACD.signalLine[MACD.signalLine.length - 1] : null,
+                histogram: MACD && MACD.histogram && MACD.histogram.length > 0 ? MACD.histogram[MACD.histogram.length - 1] : null
+            };
 
-            // Send the data to the server for MLA.
-            return DataForMLA(SMA, EMA, RSI, MACD.MACD, MACD.signalLine, MACD.histogram);
+            return DataForMLA(indicators);
+            
         })
-
-        // Display the prediction.
         .then(predictionData => {
-            DisplayPrediction(predictionData);
+            DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, predictionData.Prediction);
         })
-        // If the response was not successful, display the error.
         .catch(error => {
-            // Handle any errors that occurred during the fetch.
             console.error("Error:", error);
         });
 });
@@ -202,8 +207,12 @@ function ComputeMACD(timeSeries) {
 }
 
 // Display stock data, SMA, and EMA on the web page.
-function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction) {
+function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction = null) {
     const output = document.getElementById("StockResult");
+
+    if (prediction !== null) {
+        UpdateDisplayWithPrediction({ Prediction: prediction });
+    }
 
     let timeSeriesDate;
 
@@ -251,7 +260,6 @@ function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction) 
         <p><strong>MACD:</strong> ${lastMACDValue}</p>
         <p><strong>Signal Line:</strong> ${signalLineValue}</p>
         <p><strong>Histogram:</strong> ${histogramValue}</p>
-        <p><strong>Prediction:</strong> ${prediction}</p>
     </div>
     `;
 
@@ -277,31 +285,30 @@ function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction) 
     }
 }
 
-function DataForMLA(SMA, EMA, RSI, MACD, signalLine, histogram) {
-    const indicators = {
-        SMA: SMA,
-        EMA: EMA,
-        RSI: RSI,
-        MACD: MACD,
-        signalLine: signalLine,
-        histogram: histogram
-    };
 
-    fetch("/Stocks?handler=PredictionCalculation", {
-        method: "POST",
-        headers: {
-            'Content-Type': 'application/json;charset=utf-8'
-        },
-        body: JSON.stringify(indicators)
-    })
+function DataForMLA(indicators) {
+    // Construct query string from indicators object
+    const queryParams = new URLSearchParams(indicators).toString();
 
-        .then(response => response.json())
+    return fetch(`/Stocks?handler=PredictionCalculation&${queryParams}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(predictionData => {
+            UpdateDisplayWithPrediction(predictionData);
+        })
         .catch(error => {
-            // Handle any errors that occurred during the fetch.
-            console.error("Error:", error);
+            console.error('Error sending indicators to server:', error);
         });
 }
 
-function DisplayPrediction(predictionData) {
-    DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, predictionData.prediction)
+ 
+function UpdateDisplayWithPrediction(predictionData) {
+    const predictionElement = document.getElementById('PredictionResult');
+    if (predictionElement) {
+        predictionElement.textContent = `Prediction: ${predictionData.Prediction}`;
+    }
 }
