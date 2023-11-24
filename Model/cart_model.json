@@ -1,0 +1,38 @@
+{
+  "Root": {
+    "IsLeaf": false,
+    "FeatureToSplit": "MACD",
+    "SplitValue": 0.04,
+    "Prediction": null,
+    "LeftChild": {
+      "IsLeaf": false,
+      "FeatureToSplit": "histogram",
+      "SplitValue": -1.43,
+      "Prediction": null,
+      "LeftChild": {
+        "IsLeaf": true,
+        "FeatureToSplit": null,
+        "SplitValue": 0,
+        "Prediction": "Buy",
+        "LeftChild": null,
+        "RightChild": null
+      },
+      "RightChild": {
+        "IsLeaf": true,
+        "FeatureToSplit": null,
+        "SplitValue": 0,
+        "Prediction": "Sell",
+        "LeftChild": null,
+        "RightChild": null
+      }
+    },
+    "RightChild": {
+      "IsLeaf": true,
+      "FeatureToSplit": null,
+      "SplitValue": 0,
+      "Prediction": "Sell",
+      "LeftChild": null,
+      "RightChild": null
+    }
+  }
+}
