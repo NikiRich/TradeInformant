@@ -184,7 +184,7 @@ namespace TradeInformant.Pages
             // Return the data
             return new JsonResult(jsonInfo);
         }
-        
+
         // DTO for indicators
         public class Indicators
         {

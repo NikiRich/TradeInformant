@@ -1,11 +1,87 @@
 ﻿@page
 @model TradeInformant.Pages.US_Economic_IndicatorsModel
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<link rel="stylesheet" href="~/css/US_Economic_Indicators.css" />
 
 <div class="container">
     <div class="row">
-        <div class="col-md">
+        <div class="col-md-5">
+            <form method="get" id="Indicators" action="/US_Economic_Indicators">
 
+                <label for="RealGDP">
+                    Real GDP:
+                    <select id="RealGDP" name="RealGDP">
+                        <option value="Annually">Annually</option>
+                    </select>
+                </label><br />
+
+
+                <label for="RealGDPperiod">
+                    Number of Periods:
+                    <input type="number" id="RealGDPperiod" name="RealGDPperiod" placeholder="Between 1 and 100">
+                </label><br />
+
+
+                <label for="RealGDPperCapita">
+                    Real GDP Per Capita:
+                    <select id="RealGDPperCapita" name="realGDPperCapita">
+                        <option value="Quarterly">Quarterly</option>
+                    </select>
+                </label>
+
+
+                <label for="RealGDPperCapitaPeriod">
+                    Number of Periods:
+                    <input type="number" id="RealGDPperCapitaPeriod" name="RealGDPperCapitaPeriod" placeholder="Between 1 and 100"><br>
+                </label><br />
+
+
+                <label for="CPI">
+                    CPI:
+                    <select id="CPI" name="CPI">
+                        <option value="Monthly">Monthly</option>
+                        <option value="SemiaAnually">SemiAnnually</option>
+                    </select>
+                </label><br />
+
+
+                <label for="CPIperiod">
+                    Number of Periods:
+                    <input type="number" id="CPIperiod" name="CPIperiod" placeholder="Between 1 and 100"><br>
+                </label><br />
+
+
+                <label for="Inflation">
+                    Inflation:
+                    <select id="Inflation" name="Inflation">
+                        <option value="Annually">Annually</option>
+                    </select>
+                </label><br />
+
+
+                <label for="InflationPeriod">
+                    Number of Periods:
+                    <input type="number" id="InflationPeriod" name="InflationPeriod" placeholder="Betwen 1 and 100">
+                </label><br />
+
+
+                <label for="UnemploymentRate">
+                    US Unemployment Rate:
+                    <select id="unemploymentRate" name="unemploymentRate">
+                        <option value="Monthly">Monthly</option>
+                    </select>
+                </label><br />
+
+
+                <label for="UnemploymentRatePeriod">
+                    Number of Periods:
+                    <input type="number" id="UnemloymentRatePerido" name="UnemploymentRatePeriod" placeholder="Between 1 and 100"><br>
+                </label><br />
+
+
+                <input type="submit" value="Submit">
+            </form>
+            <div id="IndicatorsOutput" class="col-md-7"></div>
         </div>
     </div>
 </div>
