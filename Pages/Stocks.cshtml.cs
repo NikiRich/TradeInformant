@@ -184,7 +184,7 @@ namespace TradeInformant.Pages
             // Return the data
             return new JsonResult(jsonInfo);
         }
-
+        
         // DTO for indicators
         public class Indicators
         {
@@ -198,34 +198,62 @@ namespace TradeInformant.Pages
         // Method to save the trained CART model to a file
         private void SaveModelToFile(CART cart)
         {
-            // Path to the model file
-            var modelPath = Path.Combine(_env.ContentRootPath, "Model", "cart_model.json");
+            try
+            {
+                // Path to the model file
+                var modelPath = Path.Combine(_env.ContentRootPath, "Model", "cart_model.json");
 
-            // Serialize the model to JSON
-            var modelJson = JsonSerializer.Serialize(cart);
+                // Serialize the model to JSON
+                var options = new JsonSerializerOptions { WriteIndented = true };
+                var modelJson = JsonSerializer.Serialize(cart, options);
 
-            // Write the JSON to the file, overwriting any existing file
-            System.IO.File.WriteAllText(modelPath, modelJson);
+                // Ensure the directory exists
+                var directory = Path.GetDirectoryName(modelPath);
+                if (!Directory.Exists(directory))
+                {
+                    Directory.CreateDirectory(directory);
+                }
+
+                // Write the JSON to the file, overwriting any existing file
+                System.IO.File.WriteAllText(modelPath, modelJson);
+            }
+            catch (Exception ex)
+            {
+                // Handle any exceptions that occur during serialization
+                // Log the exception, throw, or handle as needed
+                throw new InvalidOperationException("Failed to save model to file.", ex);
+            }
         }
 
         // Method to load the trained CART model from a file
         private CART LoadModelFromFile()
         {
-            // Path to the model file
-            var modelPath = Path.Combine(_env.ContentRootPath, "Model", "cart_model.json");
-
-            // Check if the model file exists
-            if (System.IO.File.Exists(modelPath))
+            try
             {
-                // Read the JSON from the file
-                var modelJson = System.IO.File.ReadAllText(modelPath);
+                // Path to the model file
+                var modelPath = Path.Combine(_env.ContentRootPath, "Model", "cart_model.json");
 
-                // Deserialize the JSON to a CART object
-                return JsonSerializer.Deserialize<CART>(modelJson);
+                // Check if the model file exists
+                if (System.IO.File.Exists(modelPath))
+                {
+                    // Read the JSON from the file
+                    var modelJson = System.IO.File.ReadAllText(modelPath);
+
+                    // Deserialize the JSON to a CART object
+                    return JsonSerializer.Deserialize<CART>(modelJson);
+                }
+                else
+                {
+                    // If the file does not exist, return null indicating no model is loaded
+                    return null;
+                }
             }
-
-            // If the file does not exist, return null indicating no model is loaded
-            return null;
+            catch (Exception ex)
+            {
+                // Handle any exceptions that occur during deserialization
+                // Log the exception, throw, or handle as needed
+                throw new InvalidOperationException("Failed to load model from file.", ex);
+            }
         }
 
         // This method is for training the model with provided training data.
@@ -237,7 +265,7 @@ namespace TradeInformant.Pages
             }
 
             // Convert the training data into the expected format for the CART algorithm
-            List<Dictionary<string, double>> features = trainingData.Features;
+            List<Dictionary<string, decimal>> features = trainingData.Features;
             List<string> labels = trainingData.Labels;
 
             // Create an instance of the CART algorithm and train it
@@ -289,7 +317,7 @@ namespace TradeInformant.Pages
         // DTO for training data
         public class TrainingData
         {
-            public List<Dictionary<string, double>> Features { get; set; }
+            public List<Dictionary<string, decimal>> Features { get; set; }
             public List<string> Labels { get; set; }
         }
 
@@ -297,19 +325,25 @@ namespace TradeInformant.Pages
         // Implementation of the CART algorithm
         public class CART
         {
-            private DecisionTreeNode _root;
+            public DecisionTreeNode Root { get; set; }
 
             public CART()
             {
-                _root = null;
+                Root = null;
             }
 
-            public void Train(List<Dictionary<string, double>> features, List<string> labels)
+            public void Train(List<Dictionary<string, decimal>> features, List<string> labels)
             {
-                _root = BuildTree(features, labels);
+                Root = BuildTree(features, labels);
+                if (Root == null)
+                {
+                    // Log error or throw an exception if the root is still null after training
+                    throw new InvalidOperationException("Failed to build the decision tree.");
+                }
+
             }
 
-            private DecisionTreeNode BuildTree(List<Dictionary<string, double>> features, List<string> labels)
+            private DecisionTreeNode BuildTree(List<Dictionary<string, decimal>> features, List<string> labels)
             {
                 // Check for stopping conditions
                 if (ShouldStopSplitting(features, labels))
@@ -340,7 +374,7 @@ namespace TradeInformant.Pages
                     RightChild = rightChild
                 };
             }
-            private bool ShouldStopSplitting(List<Dictionary<string, double>> features, List<string> labels)
+            private bool ShouldStopSplitting(List<Dictionary<string, decimal>> features, List<string> labels)
             {
                 // Stop if all labels are the same
                 if (labels.Distinct().Count() == 1)
@@ -360,11 +394,12 @@ namespace TradeInformant.Pages
                 return false;
             }
 
-            private (string bestFeature, double bestValue) FindBestSplit(List<Dictionary<string, double>> features, List<string> labels)
+            private (string bestFeature, decimal bestValue) FindBestSplit(List<Dictionary<string, decimal>> features, List<string> labels)
             {
-                double bestGain = double.MinValue;
+                decimal bestGain = decimal.MinValue;
                 string bestFeature = null;
-                double bestValue = double.NaN;
+                decimal? bestValue = null;
+
 
                 // Iterate over every feature
                 foreach (var feature in features.SelectMany(f => f.Keys).Distinct())
@@ -385,16 +420,16 @@ namespace TradeInformant.Pages
                     }
                 }
 
-                return (bestFeature, bestValue);
+                return (bestFeature, bestValue ?? default);
             }
 
-            private (List<Dictionary<string, double>> leftFeatures, List<string> leftLabels,
-         List<Dictionary<string, double>> rightFeatures, List<string> rightLabels)
-    PartitionData(List<Dictionary<string, double>> features, List<string> labels, string feature, double value)
+            private (List<Dictionary<string, decimal>> leftFeatures, List<string> leftLabels,
+            List<Dictionary<string, decimal>> rightFeatures, List<string> rightLabels)
+            PartitionData(List<Dictionary<string, decimal>> features, List<string> labels, string feature, decimal value)
             {
-                var leftFeatures = new List<Dictionary<string, double>>();
+                var leftFeatures = new List<Dictionary<string, decimal>>();
                 var leftLabels = new List<string>();
-                var rightFeatures = new List<Dictionary<string, double>>();
+                var rightFeatures = new List<Dictionary<string, decimal>>();
                 var rightLabels = new List<string>();
 
                 for (int i = 0; i < features.Count; i++)
@@ -413,51 +448,52 @@ namespace TradeInformant.Pages
 
                 return (leftFeatures, leftLabels, rightFeatures, rightLabels);
             }
-            private double CalculateInformationGain(List<Dictionary<string, double>> features, List<string> labels, string feature, double value)
+            private decimal CalculateInformationGain(List<Dictionary<string, decimal>> features, List<string> labels, string feature, decimal value)
             {
                 // Split the data
                 var (leftFeatures, leftLabels, rightFeatures, rightLabels) = PartitionData(features, labels, feature, value);
 
                 // Calculate the entropy before the split
-                double originalEntropy = Entropy(labels);
+                decimal originalEntropy = Entropy(labels);
 
                 // Calculate the entropy after the split
-                double leftEntropy = Entropy(leftLabels);
-                double rightEntropy = Entropy(rightLabels);
+                decimal leftEntropy = Entropy(leftLabels);
+                decimal rightEntropy = Entropy(rightLabels);
 
                 // Calculate the weighted average of the entropy after the split
-                double weightedEntropy = ((double)leftLabels.Count / labels.Count) * leftEntropy
-                                         + ((double)rightLabels.Count / labels.Count) * rightEntropy;
+                decimal weightedEntropy = ((decimal)leftLabels.Count / labels.Count) * leftEntropy
+                                         + ((decimal)rightLabels.Count / labels.Count) * rightEntropy;
 
                 // Information gain is the entropy reduction by splitting the data
-                double informationGain = originalEntropy - weightedEntropy;
+                decimal informationGain = originalEntropy - weightedEntropy;
 
                 return informationGain;
             }
 
-            private double Entropy(List<string> labels)
+            private decimal Entropy(List<string> labels)
             {
                 // Group the labels and count occurrences
                 var labelCounts = labels.GroupBy(l => l).ToDictionary(g => g.Key, g => g.Count());
 
                 // Calculate the entropy
-                double entropy = 0.0;
+                decimal entropy = 0;
                 foreach (var labelCount in labelCounts)
                 {
                     double probability = (double)labelCount.Value / labels.Count;
-                    entropy -= probability * Math.Log(probability, 2);
+                    entropy -= (decimal)(probability * Math.Log(probability, 2));
                 }
 
                 return entropy;
             }
 
+
             public string Predict(Dictionary<string, decimal> inputFeatures)
             {
-                if (_root == null)
+                if (Root == null)
                 {
                     throw new InvalidOperationException("The model has not been trained.");
                 }
-                return PredictFromNode(_root, inputFeatures);
+                return PredictFromNode(Root, inputFeatures);
             }
 
             private string PredictFromNode(DecisionTreeNode node, Dictionary<string, decimal> features)
@@ -498,7 +534,7 @@ namespace TradeInformant.Pages
                     return this.Prediction;
                 }
                 else
-                {      
+                {
                     if (features[this.FeatureToSplit] <= this.SplitValue)
                     {
                         return this.LeftChild.Predict(features);
@@ -510,7 +546,6 @@ namespace TradeInformant.Pages
                 }
             }
         }
-        
     }
 }
 
