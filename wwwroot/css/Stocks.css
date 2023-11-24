@@ -6,3 +6,8 @@
     text-decoration: underline;
     font-weight: bold;
 }
+
+#stock-btns {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}

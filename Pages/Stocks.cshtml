@@ -64,7 +64,10 @@
                     <input type="number" name="Periods" id="Periods" placeholder="Between 1 and 100" required />
                 </label>
                 <br /><br />
-                <button type="submit">Get data</button>
+                <div id="stock-btns">
+                    <button type="submit">Get data</button>
+                    <button id="trainModel" type="button">Train Model</button>
+                </div>
             </form>
             <div id="StockResult" class="row"></div>
             <div id="PredictionResult" class="row"></div>

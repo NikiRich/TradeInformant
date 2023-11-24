@@ -46,7 +46,7 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
             const MACD = ComputeMACD(timeSeries);
             // Display the stock information.
             DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD);
-            
+
             const indicators = {
                 SMA: SMA,
                 EMA: EMA && EMA.length > 0 ? EMA[EMA.length - 1] : null,
@@ -57,10 +57,10 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
             };
 
             return DataForMLA(indicators);
-            
+
         })
         .then(predictionData => {
-            DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, predictionData.Prediction);
+            DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, predictionData.prediction);
         })
         .catch(error => {
             console.error("Error:", error);
@@ -305,10 +305,86 @@ function DataForMLA(indicators) {
         });
 }
 
- 
+
 function UpdateDisplayWithPrediction(predictionData) {
     const predictionElement = document.getElementById('PredictionResult');
     if (predictionElement) {
-        predictionElement.textContent = `Prediction: ${predictionData.Prediction}`;
+        predictionElement.textContent = `Prediction: ${predictionData.prediction}`;
     }
+}
+
+document.getElementById("trainModel").addEventListener("click", function (event) {
+    trainModel();
+});
+
+
+function getTestPrediction() {
+    // Call the test endpoint to get the prediction
+    fetch('/Stocks?handler=TestPrediction')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Test prediction:', data.prediction);
+        })
+        .catch(error => {
+            console.error('Error during test prediction:', error);
+        });
+}
+
+
+function trainModel() {
+    // Example training data
+    const trainingData = {
+        Features: [
+            { "SMA": 151.41, "EMA": 133.73, "RSI": 52.23, "MACD": 4.60, "signalLine": 4.67, "histogram": -0.22 },
+            { "SMA": 143.92, "EMA": 129.33, "RSI": 34.54, "MACD": -0.19, "signalLine": 0.76, "histogram": 1.07 },
+            { "SMA": 136.05, "EMA": 82.53, "RSI": 40.06, "MACD": -10.02, "signalLine": -9.89, "histogram": -0.24 },
+            { "SMA": 234.37, "EMA": 267.61, "RSI": 24.41, "MACD": -7.90, "signalLine": -11.00, "histogram": -4.83 },
+            { "SMA": 236.93, "EMA": 19.95, "RSI": 32.73, "MACD": 3.66, "signalLine": 4.23, "histogram": -0.89 },
+            { "SMA": 361.84, "EMA": 337.48, "RSI": 44.49, "MACD": 6.60, "signalLine": -0.79, "histogram": -6.72 },
+            { "SMA": 479.51, "EMA": 426.96, "RSI": 28.96, "MACD": 13.08, "signalLine": 6.09, "histogram": -13.95 },
+            { "SMA": 108.75, "EMA": 115.84, "RSI": 51.49, "MACD": 0.04, "signalLine": -0.42, "histogram": -1.43 }
+        ],
+        Labels: [
+            "Sell",
+            "Sell",
+            "Sell",
+            "Buy",
+            "Sell",
+            "Sell",
+            "Sell",
+            "Buy",
+        ]
+    };
+    const queryParams = new URLSearchParams();
+    for (let i = 0; i < trainingData.Features.length; i++) {
+        queryParams.append(`Features[${i}][SMA]`, trainingData.Features[i].SMA);
+        queryParams.append(`Features[${i}][EMA]`, trainingData.Features[i].EMA);
+        queryParams.append(`Features[${i}][RSI]`, trainingData.Features[i].RSI);
+        queryParams.append(`Features[${i}][MACD]`, trainingData.Features[i].MACD);
+        queryParams.append(`Features[${i}][signalLine]`, trainingData.Features[i].signalLine);
+        queryParams.append(`Features[${i}][histogram]`, trainingData.Features[i].histogram);
+        queryParams.append(`Labels[${i}]`, trainingData.Labels[i]);
+    }
+
+    // Send the GET request with query parameters
+    return fetch(`/Stocks?handler=TrainModel&${queryParams.toString()}`, {
+        method: "GET"
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok ' + response.statusText);
+            }
+            return response.json();
+        })
+        .then(result => {
+            console.log('Training completed:', result);
+        })
+        .catch(error => {
+            console.error('Error during model training:', error);
+        });
 }
