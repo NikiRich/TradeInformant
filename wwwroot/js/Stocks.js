@@ -59,12 +59,10 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
             return DataForMLA(indicators);
 
         })
-        .then(predictionData => {
-            DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, predictionData.prediction);
-        })
+
         .catch(error => {
-            console.error("Error:", error);
-        });
+            console.error('Error:', error);
+        })
 });
 
 
@@ -269,7 +267,7 @@ function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction =
         const stockInfo = timeSeries[date];
         output.innerHTML += `
         <div class="col-md-3">
-            <div class="card mb-3">
+            <div class="card md-3">
                 <div class="card-header">
                     Date: ${date}
                 </div>
@@ -316,24 +314,6 @@ function UpdateDisplayWithPrediction(predictionData) {
 document.getElementById("trainModel").addEventListener("click", function (event) {
     trainModel();
 });
-
-
-function getTestPrediction() {
-    // Call the test endpoint to get the prediction
-    fetch('/Stocks?handler=TestPrediction')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Test prediction:', data.prediction);
-        })
-        .catch(error => {
-            console.error('Error during test prediction:', error);
-        });
-}
 
 
 function trainModel() {
