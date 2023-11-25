@@ -5,8 +5,8 @@
 
 <div class="container">
     <div class="row">
-        <div class="col-md-5">
-            <form method="get" id="Indicators" action="/US_Economic_Indicators">
+        <div class="col-md-2">
+            <form method="get" id="RealGDPForm" action="/US_Economic_Indicators">
 
                 <label for="RealGDP">
                     Real GDP:
@@ -20,8 +20,12 @@
                     Number of Periods:
                     <input type="number" id="RealGDPperiod" name="RealGDPperiod" placeholder="Between 1 and 100">
                 </label><br />
+                <button type="submit">Get GDP</button>
+            </form>
+        </div>
 
-
+        <div class="col-md-3">
+            <form method="get" id="RealGDPperCapitaForm" action="/US_Economic_Indicators">
                 <label for="RealGDPperCapita">
                     Real GDP Per Capita:
                     <select id="RealGDPperCapita" name="realGDPperCapita">
@@ -34,8 +38,12 @@
                     Number of Periods:
                     <input type="number" id="RealGDPperCapitaPeriod" name="RealGDPperCapitaPeriod" placeholder="Between 1 and 100"><br>
                 </label><br />
+                <button type="submit">Get GDP Per Capita</button>
+            </form>
+        </div>
 
-
+        <div class="col-md-2">
+            <form method="get" id="CPIForm" action="/US_Economic_Indicators">
                 <label for="CPI">
                     CPI:
                     <select id="CPI" name="CPI">
@@ -49,8 +57,12 @@
                     Number of Periods:
                     <input type="number" id="CPIperiod" name="CPIperiod" placeholder="Between 1 and 100"><br>
                 </label><br />
+                <button type="submit">Get CPI</button>
+            </form>
+        </div>
 
-
+        <div class="col-md-2">
+            <form method="get" id="InflationForm" action="/US_Economic_Indicators">
                 <label for="Inflation">
                     Inflation:
                     <select id="Inflation" name="Inflation">
@@ -63,11 +75,15 @@
                     Number of Periods:
                     <input type="number" id="InflationPeriod" name="InflationPeriod" placeholder="Betwen 1 and 100">
                 </label><br />
+                <button type="submit">Get Inflation</button>
+            </form>
+        </div>
 
-
+        <div class="col-md-3">
+            <form method="get" id="UnemploymentRateForm" action="/US_Economic_Indicators">
                 <label for="UnemploymentRate">
                     US Unemployment Rate:
-                    <select id="unemploymentRate" name="unemploymentRate">
+                    <select id="UnemploymentRate" name="UnemploymentRate">
                         <option value="Monthly">Monthly</option>
                     </select>
                 </label><br />
@@ -75,13 +91,20 @@
 
                 <label for="UnemploymentRatePeriod">
                     Number of Periods:
-                    <input type="number" id="UnemloymentRatePerido" name="UnemploymentRatePeriod" placeholder="Between 1 and 100"><br>
+                    <input type="number" id="UnemploymentRatePeriod" name="UnemploymentRatePeriod" placeholder="Between 1 and 100"><br>
                 </label><br />
-
-
-                <input type="submit" value="Submit">
+                <button type="submit">Get Unemployment Rate</button>
             </form>
-            <div id="IndicatorsOutput" class="col-md-7"></div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md3">
+            <div id="RealGDPOutput"></div>
+            <div id="RealGDPperCapitaOutput"></div>
+            <div id="CPIOutput"></div>
+            <div id="InflationOutput"></div>
+            <div id="UnemploymentRateOutput"></div>
         </div>
     </div>
 </div>
+<script src="~/js/US_Economic_Indicators.js"></script>
