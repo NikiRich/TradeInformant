@@ -309,7 +309,7 @@ namespace TradeInformant.Pages
             var prediction = cart.Predict(inputFeatures);
 
             // Return the prediction result
-            return new JsonResult(new { Prediction = prediction });
+            return new JsonResult(new {prediction});
         }
 
 

@@ -209,7 +209,7 @@ function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction =
     const output = document.getElementById("StockResult");
 
     if (prediction !== null) {
-        UpdateDisplayWithPrediction({ Prediction: prediction });
+        UpdateDisplayWithPrediction({ Prediction: prediction })
     }
 
     let timeSeriesDate;
@@ -305,9 +305,9 @@ function DataForMLA(indicators) {
 
 
 function UpdateDisplayWithPrediction(predictionData) {
-    const predictionElement = document.getElementById('PredictionResult');
+    const predictionElement = document.getElementById('StockResult');
     if (predictionElement) {
-        predictionElement.textContent = `Prediction: ${predictionData.prediction}`;
+        predictionElement.textContent = `Predictions: ${predictionData.prediction}`;
     }
 }
 

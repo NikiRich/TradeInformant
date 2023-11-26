@@ -1,3 +1,55 @@
 ﻿@page
 @model TradeInformant.Pages.AboutModel
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+<link rel="stylesheet" href="~/css/AboutUs.css" />
+<link rel="stylesheet" href="~/css/Stocks.css" />
+<div class="container">
+    <div class="row">
+        <div class="col-md-7">
+            <p>
+                Trade Informant is a web app that lets you various economic data. <br />
+                You can get the <span class="meanings">High, Low, Open,and Close</span> of a stock. <br />
+                You can get the <span class="meanings">SMA, EMA, RSI, MACD, SingalLine</span> and <span class="meanings">Histogram</span> of a stock.<br />
+                The output is given for the selected period of time. <br />
+                In the end, you can also see the signal prediction for a stock. Whether it is a <span class="meanings">Buy, Sell,</span> and <span class="meanings">Hold</span>.<br />
+            </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6" style="visibility:hidden"></div>
+        <div class="col-md-6">
+            <p>
+                The prediction is done using a <span class="meanings">Machine Learning Algorithm - CART</span>.<br />
+                <span class="meanings">CART</span> stands for <span class="meanings">Classification and Regression Tree</span>.<br />
+                The prediction is performed using the <span class="meanings">SMA, EMA, RSI, MACD, SingalLine</span> and <span class="meanings">Histogram</span> of a stock. <br />
+            </p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <p>
+                You can get information about various US economic indicators. <br />
+                These are <span class="meanings">RealGDP, RealGDP per Capita, CPI, Inflation</span> and <span class="meanings">Unemployment Rate</span>.<br />
+                The output is given for the selected period of time. <br />
+            </p>
+        </div>
+        <div class="col-md-6" style="visibility:hidden"></div>
+    </div>
+    <div class="row">
+        <div class="col-md-6" style="visibility:hidden"></div>
+        <div class="col-md-6">
+            <p>
+                You can get information about the <span class="meanings">Gaining</span> and <span class="meanings">Losing</span> stocks. <br />
+                These stocks are represented as the <span class="meanings"> Top 10 Gainers</span> and <span class="meanings">Losers</span> from stocks. <br />
+            </p>
+        </div>
+    </div>
+</div>
+<footer style="position:absolute; bottom:3em; padding:0.5em">
+    The following web application was designed with educational purposes only.
+    Please do not consider the predictions made in this app as a financial advice. <br />
+    The represented data is not guaranteed to be 100% accurate.
+    Always do your own research before investing in any stock.<br />
+    The data used in this app is provided by <a href="https://www.alphavantage.co/" target="_blank">Alpha Vantage</a>.<br />
+    Calculations of the indicators, as well as the prediction itself are performed using formulas and are not affiliated with the <a href="https://www.alphavantage.co/" target="_blank">Alpha Vantage</a> API.
+</footer>
