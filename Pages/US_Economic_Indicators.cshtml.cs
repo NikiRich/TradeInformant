@@ -11,12 +11,14 @@ namespace TradeInformant.Pages
     public class US_Economic_IndicatorsModel : PageModel
     {
         public int RealGDPperiod { get; set; }
+        public string? RealGDP { get; set; }
         public int RealGDPperCapitaPeriod { get; set; }
-        public string? CPI { get; set; }
         public int CPIperiod { get; set; }
+        public string? CPI { get; set; }
         public int InflationPeriod { get; set; }
         public int UnemploymentRatePeriod { get; set; }
-        public string RealGDP = "REAL_GDP";
+        public string RealGDP_name = "REAL_GDP";
+        public string CPI_name = "CPI";
         public string RealGDPperCapita = "REAL_GDP_PER_CAPITA";
         public string Inflation = "INFLATION";
         public string UnemploymentRate = "UNEMPLOYMENT";
@@ -47,20 +49,20 @@ namespace TradeInformant.Pages
 
 
         // Function to get the cache file name
-        public string GetCacheFileName(string RealGDP)
+        public string GetCacheFileName(string RealGDP_name)
         {
             // Create the file name
-            var fileName = $"cache_{RealGDP}.json";
+            var fileName = $"cache_{RealGDP_name}.json";
             // Return the path to the cache file
             return Path.Combine(CacheDirectory, fileName);
         }
 
 
         // Function to load the cache from the file
-        public Dictionary<string, dynamic>? LoadCacheFromFile(string RealGDP)
+        public Dictionary<string, dynamic>? LoadCacheFromFile(string RealGDP_name)
         {
             // Get the path to the cache file
-            string filePath = GetCacheFileName(RealGDP);
+            string filePath = GetCacheFileName(RealGDP_name);
 
             // Check if the file exists
             if (System.IO.File.Exists(filePath))
@@ -80,7 +82,7 @@ namespace TradeInformant.Pages
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error reading or deserializing cache for {RealGDP}: {e.Message}");
+                    Console.WriteLine($"Error reading or deserializing cache for {RealGDP_name}: {e.Message}");
                 }
             }
             // Return null if the cache is not valid
@@ -91,7 +93,7 @@ namespace TradeInformant.Pages
 
 
         // Function to save the cache to the file
-        public void SaveCacheToFile(Dictionary<string, dynamic> data, string RealGDP)
+        public void SaveCacheToFile(Dictionary<string, dynamic> data, string RealGDP_name)
         {
             // Create the cache entry
             var cacheEntry = new CacheEntry
@@ -102,7 +104,7 @@ namespace TradeInformant.Pages
                 Timestamp = DateTime.UtcNow
             };
             // Get the path to the cache file
-            string filePath = GetCacheFileName(RealGDP);
+            string filePath = GetCacheFileName(RealGDP_name);
 
             // Write the cache to the file in a thread-safe manner
             lock (filePath)
@@ -112,7 +114,7 @@ namespace TradeInformant.Pages
         }
 
 
-        public IActionResult OnGetRGDP(int? RealGDPperiod)
+        public IActionResult OnGetRGDP(int? RealGDPperiod, string? RealGDP)
         {
             if (!RealGDPperiod.HasValue || RealGDPperiod.Value <= 0)
             {
@@ -120,12 +122,21 @@ namespace TradeInformant.Pages
             }
 
             this.RealGDPperiod = RealGDPperiod.Value;
-
+            this.RealGDP = RealGDP;
+            switch (RealGDP)
+            {
+                case "Annualy":
+                    RealGDP = "annual";
+                    break;
+                case "Quarterly":
+                    RealGDP = "quarterly";
+                    break;
+            }
             const string API_KEY = "1F6SLA57L4NZM1DR";
-            string url = $"https://www.alphavantage.co/query?function=REAL_GDP&interval=monthly&apikey={API_KEY}";
+            string url = $"https://www.alphavantage.co/query?function={RealGDP_name}&interval={RealGDP}&apikey={API_KEY}";
 
             Uri uri = new Uri(url);
-            _ = LoadCacheFromFile(RealGDP);
+            _ = LoadCacheFromFile(RealGDP_name);
             try
             {
                 using (WebClient client = new WebClient())
@@ -139,7 +150,7 @@ namespace TradeInformant.Pages
                         json_data["data"] = dataPoints.Take(RealGDPperiod.Value).ToList();
                     }
 
-                    SaveCacheToFile(json_data, RealGDP);
+                    SaveCacheToFile(json_data, RealGDP_name);
                     return new JsonResult(json_data);
                 }
             }
@@ -222,7 +233,7 @@ namespace TradeInformant.Pages
         }
 
 
-        public IActionResult OnGetRGDPpCP(int? RealGDPperCapitaPeriod)
+        public IActionResult OnGetRGDPpC(int? RealGDPperCapitaPeriod)
         {
             if (!RealGDPperCapitaPeriod.HasValue || RealGDPperCapitaPeriod.Value <= 0)
             {
@@ -232,7 +243,7 @@ namespace TradeInformant.Pages
             this.RealGDPperCapitaPeriod = RealGDPperCapitaPeriod.Value;
 
             const string API_KEY = "1F6SLA57L4NZM1DR";
-            string url = $"https://www.alphavantage.co/query?function=REAL_GDP&interval=monthly&apikey={API_KEY}";
+            string url = $"https://www.alphavantage.co/query?function={RealGDPperCapita}&apikey={API_KEY}";
 
             Uri uri = new Uri(url);
             _ = LoadCacheFromFile2(RealGDPperCapita);
@@ -267,20 +278,20 @@ namespace TradeInformant.Pages
             public DateTime Timestamp3 { get; set; }
         }
 
-        public string GetCacheFileName3(string Inflation)
+        public string GetCacheFileName3(string CPI_name)
         {
             // Create the file name
-            var fileName = $"cache_{Inflation}.json";
+            var fileName = $"cache_{CPI_name}.json";
             // Return the path to the cache file
             return Path.Combine(CacheDirectory, fileName);
         }
 
 
         // Function to load the cache from the file
-        public Dictionary<string, dynamic>? LoadCacheFromFile3(string Inflation)
+        public Dictionary<string, dynamic>? LoadCacheFromFile3(string CPI_name)
         {
             // Get the path to the cache file
-            string filePath = GetCacheFileName3(Inflation);
+            string filePath = GetCacheFileName3(CPI_name);
 
             // Check if the file exists
             if (System.IO.File.Exists(filePath))
@@ -300,7 +311,7 @@ namespace TradeInformant.Pages
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"Error reading or deserializing cache for {Inflation}: {e.Message}");
+                    Console.WriteLine($"Error reading or deserializing cache for {CPI_name}: {e.Message}");
                 }
             }
             // Return null if the cache is not valid
@@ -311,7 +322,7 @@ namespace TradeInformant.Pages
 
 
         // Function to save the cache to the file
-        public void SaveCacheToFile3(Dictionary<string, dynamic> data, string Inflation)
+        public void SaveCacheToFile3(Dictionary<string, dynamic> data, string CPI_name)
         {
             // Create the cache entry
             var cacheEntry3 = new CacheEntry3
@@ -322,7 +333,7 @@ namespace TradeInformant.Pages
                 Timestamp3 = DateTime.UtcNow
             };
             // Get the path to the cache file
-            string filePath = GetCacheFileName3(Inflation);
+            string filePath = GetCacheFileName3(CPI_name);
 
             // Write the cache to the file in a thread-safe manner
             lock (filePath)
@@ -351,9 +362,9 @@ namespace TradeInformant.Pages
             }
 
             const string API_KEY = "1F6SLA57L4NZM1DR";
-            string url = $"https://www.alphavantage.co/query?function=CPI&interval={CPI}&apikey={API_KEY}";
+            string url = $"https://www.alphavantage.co/query?function={CPI_name}&interval={CPI}&apikey={API_KEY}";
             Uri uri = new Uri(url);
-            _ = LoadCacheFromFile3(CPI);
+            _ = LoadCacheFromFile3(CPI_name);
             try
             {
                 using (WebClient client = new WebClient())
@@ -367,7 +378,7 @@ namespace TradeInformant.Pages
                         json_data["data"] = dataPoints.Take(CPIperiod.Value).ToList();
                     }
 
-                    SaveCacheToFile3(json_data, CPI);
+                    SaveCacheToFile3(json_data, CPI_name);
                     return new JsonResult(json_data);
                 }
             }
@@ -460,7 +471,7 @@ namespace TradeInformant.Pages
             this.InflationPeriod = InflationPeriod.Value;
 
             const string API_KEY = "1F6SLA57L4NZM1DR";
-            string url = $"https://www.alphavantage.co/query?function=REAL_GDP&interval=monthly&apikey={API_KEY}";
+            string url = $"https://www.alphavantage.co/query?function={Inflation}&apikey={API_KEY}";
 
             Uri uri = new Uri(url);
             _ = LoadCacheFromFile4(Inflation);
@@ -570,7 +581,7 @@ namespace TradeInformant.Pages
             this.UnemploymentRatePeriod = UnemploymentRatePeriod.Value;
 
             const string API_KEY = "1F6SLA57L4NZM1DR";
-            string url = $"https://www.alphavantage.co/query?function=REAL_GDP&interval=monthly&apikey={API_KEY}";
+            string url = $"https://www.alphavantage.co/query?function={UnemploymentRate}&apikey={API_KEY}";
 
             Uri uri = new Uri(url);
             _ = LoadCacheFromFile5(UnemploymentRate);
