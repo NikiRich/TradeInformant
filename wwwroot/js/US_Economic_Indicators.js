@@ -4,6 +4,7 @@ document.getElementById("RealGDPForm").addEventListener("submit", function (even
     event.preventDefault();
     // Getting the value from the form
     const RealGDPperiod = document.getElementById("RealGDPperiod").value;
+    const RealGDP = document.getElementById("RealGDP").value;
     // Validating the input
     if (RealGDPperiod < 1 || RealGDPperiod > 100) {
         alert("Enter a valid number")
@@ -12,6 +13,7 @@ document.getElementById("RealGDPForm").addEventListener("submit", function (even
     // Prepaing the query string for the API
     const query1 = new URLSearchParams({
         RealGDPperiod: RealGDPperiod,
+        RealGDP: RealGDP
     });
 
     fetch(`/US_Economic_Indicators?handler=RGDP&${query1.toString()}`, {
@@ -68,7 +70,7 @@ document.getElementById("RealGDPperCapitaForm").addEventListener("submit", funct
         RealGDPperCapitaPeriod: RealGDPperCapitaPeriod,
     });
 
-    fetch(`/US_Economic_Indicators?handler=RGDPpCP&${query2.toString()}`, {
+    fetch(`/US_Economic_Indicators?handler=RGDPpC&${query2.toString()}`, {
         method: "GET"
     })
 
@@ -220,7 +222,7 @@ function DisplayQuery4(result, InflationPeriod) {
     }
 }
 
-document.getElementById("InflationForm").addEventListener("submit", function (event) {
+document.getElementById("UnemploymentRateForm").addEventListener("submit", function (event) {
     // Preventing the form from being submitted
     event.preventDefault();
     // Getting the value from the form

@@ -12,6 +12,7 @@
                     Real GDP:
                     <select id="RealGDP" name="RealGDP">
                         <option value="Annually">Annually</option>
+                        <option value="Quarterly">Quarterly</option>
                     </select>
                 </label><br />
 
@@ -98,21 +99,11 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md3">
-            <div id="RealGDPOutput"></div>
-        </div>
-        <div class="col-md3">
-            <div id="RealGDPperCapitaOutput"></div>
-        </div>
-        <div class="col-md3">
-            <div id="CPIOutput"></div>
-        </div>
-        <div class="col-md3">
-            <div id="InflationOutput"></div>
-        </div>
-        <div class="col-md3">
-            <div id="UnemploymentRateOutput"></div>
-        </div>
+        <div class="row" id="RealGDPOutput"></div>
+        <div class="row" id="RealGDPperCapitaOutput"></div>
+        <div class="row" id="CPIOutput"></div>
+        <div class="row" id="InflationOutput"></div>
+        <div class="row" id="UnemploymentRateOutput"></div>
     </div>
 </div>
 <script src="~/js/US_Economic_Indicators.js"></script>
