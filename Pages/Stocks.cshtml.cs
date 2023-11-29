@@ -43,9 +43,9 @@ namespace TradeInformant.Pages
         // Function to get the cache file name
         public string GetCacheFileName(string StockName, string Interval)
         {
-            // Create the file name
+            // Creating the file name
             var fileName = $"cache_{StockName}_{Interval}.json";
-            // Return the path to the cache file
+            // Returning the path to the cache file
             return Path.Combine(CacheDirectory, fileName);
         }
 
@@ -53,22 +53,22 @@ namespace TradeInformant.Pages
         // Function to load the cache from the file
         public Dictionary<string, dynamic>? LoadCacheFromFile(string StockName, string Interval)
         {
-            // Get the path to the cache file
+            // Getting the path to the cache file
             string filePath = GetCacheFileName(StockName, Interval);
 
-            // Check if the file exists
+            // Checking if the file exists
             if (System.IO.File.Exists(filePath))
             {
                 try
                 {
-                    // Read the file
+                    // Reading the file
                     var jsonString = System.IO.File.ReadAllText(filePath);
-                    // Deserialize the file
+                    // Deserializing the file
                     var cacheEntry = JsonSerializer.Deserialize<CacheEntry>(jsonString);
-                    // Check if the cache is valid
+                    // Checking if the cache is valid
                     if (cacheEntry != null && DateTime.UtcNow - cacheEntry.Timestamp < CacheDuration)
                     {
-                        // Return the data
+                        // Returning the data
                         return cacheEntry.Data ?? new Dictionary<string, dynamic>();
                     }
                 }
@@ -77,28 +77,26 @@ namespace TradeInformant.Pages
                     Console.WriteLine($"Error reading or deserializing cache for {StockName} - {Interval}: {e.Message}");
                 }
             }
-            // Return null if the cache is not valid
+            // Returning null if the cache is not valid
             return null;
         }
 
 
-
-
         // Function to save the cache to the file
-        public void SaveCacheToFile(Dictionary<string, dynamic> data, string StockName, string Interval)
+        public void SaveCache(Dictionary<string, dynamic> data, string StockName, string Interval)
         {
-            // Create the cache entry
+            // Creating the cache entry
             var cacheEntry = new CacheEntry
             {
-                // Store the data
+                // Storing the data
                 Data = data,
-                // Store the current time
+                // Storing the current time
                 Timestamp = DateTime.UtcNow
             };
-            // Get the path to the cache file
+            // Getting the path to the cache file
             string filePath = GetCacheFileName(StockName, Interval);
 
-            // Write the cache to the file in a thread-safe manner
+            // Writing the cache to the file in a thread-safe manner
             lock (filePath)
             {
                 System.IO.File.WriteAllText(filePath, JsonSerializer.Serialize(cacheEntry));
@@ -109,14 +107,14 @@ namespace TradeInformant.Pages
         // Function to get the stock data
         public IActionResult OnGet(string? StockName, string? Interval, int? Periods)
         {
-            // Check if the parameters are null
+            // Checking if the parameters are null
             if (StockName == null || Interval == null || Periods == null)
             {
-                // Return the page
+                // Returning the page
                 return Page();
             }
 
-            // Store the parameters
+            // Storing the parameters
             this.StockName = StockName;
             this.Interval = Interval;
             this.Periods = (int)Periods;
@@ -126,7 +124,7 @@ namespace TradeInformant.Pages
 
             string function;
 
-            // Check the interval
+            // Checking the interval
             switch (Interval)
             {
                 case "Daily":
@@ -139,53 +137,53 @@ namespace TradeInformant.Pages
                     function = "TIME_SERIES_MONTHLY";
                     break;
                 default:
-                    // Return an error if the interval is invalid
+                    // Returning an error if the interval is invalid
                     return new BadRequestObjectResult($"Invalid Interval: {Interval}");
             }
 
-            // Create the URL to fetch the data
+            // Creating the URL to fetch the data
             string url = $"https://www.alphavantage.co/query?function={function}&symbol={StockName}&apikey={API_KEY}";
-            // Create the URI to have the URL in a proper format
+            // Creating the URI to have the URL in a proper format
             Uri uri = new Uri(url);
 
-            // Load the cache from the file
+            // Loading the cache from the file
             Dictionary<string, dynamic>? jsonInfo = LoadCacheFromFile(StockName, Interval);
 
-            // Check if the cache is null
+            // Checking if the cache is null
             if (jsonInfo == null)
             {
                 try
                 {
-                    // Fetch the data from the API
+                    // Fetching the data from the API
                     using (WebClient client = new())
                     {
-                        // Download the data
+                        // Downloading the data
                         jsonInfo = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(client.DownloadString(uri));
 
-                        // Check if the data is null
+                        // Checking if the data is null
                         if (jsonInfo == null)
                         {
                             Console.WriteLine($"Interval: {Interval}, StockName: {StockName}");
-                            // Return an error if the data is null
+                            // Returning an error if the data is null
                             return new BadRequestObjectResult("Error retrieving data for the particular stock or invalid data format");
                         }
 
-                        // Save the data to the cache
-                        SaveCacheToFile(jsonInfo, StockName, Interval);
+                        // Saving the data to the cache
+                        SaveCache(jsonInfo, StockName, Interval);
                     }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Error fetching stock data for {StockName} with Interval {Interval}: {ex.Message}");
-                    // Return an error if the data cannot be fetched
-                    return new BadRequestObjectResult("Error fetching stock data. Please try again later.");
+                    // Returning an error if the data cannot be fetched
+                    return new BadRequestObjectResult("Error fetching stock data. Please try aGain later.");
                 }
             }
-            // Return the data
+            // Returning the data
             return new JsonResult(jsonInfo);
         }
 
-        // DTO for indicators
+
         public class Indicators
         {
             public decimal SMA { get; set; }
@@ -195,51 +193,50 @@ namespace TradeInformant.Pages
             public decimal signalLine { get; set; }
             public decimal histogram { get; set; }
         }
-        // Method to save the trained CART model to a file
-        private void SaveModelToFile(CART cart)
+
+        // Method to save the TrainModeled CART model to a file
+        private void SaveModel(CART cart)
         {
             try
             {
                 // Path to the model file
                 var modelPath = Path.Combine(_env.ContentRootPath, "Model", "cart_model.json");
 
-                // Serialize the model to JSON
+                // Serializing the model to JSON
                 var options = new JsonSerializerOptions { WriteIndented = true };
                 var modelJson = JsonSerializer.Serialize(cart, options);
 
-                // Ensure the directory exists
+                // Ensuring the directory exists
                 var directory = Path.GetDirectoryName(modelPath);
                 if (!Directory.Exists(directory))
                 {
                     Directory.CreateDirectory(directory);
                 }
 
-                // Write the JSON to the file, overwriting any existing file
+                // Writing the JSON to the file, overwriting any existing file
                 System.IO.File.WriteAllText(modelPath, modelJson);
             }
             catch (Exception ex)
             {
-                // Handle any exceptions that occur during serialization
-                // Log the exception, throw, or handle as needed
                 throw new InvalidOperationException("Failed to save model to file.", ex);
             }
         }
 
-        // Method to load the trained CART model from a file
-        private CART LoadModelFromFile()
+        // Method to load the TrainModeled CART model from a file
+        private CART LoadModel()
         {
             try
             {
                 // Path to the model file
                 var modelPath = Path.Combine(_env.ContentRootPath, "Model", "cart_model.json");
 
-                // Check if the model file exists
+                // Checking if the model file exists
                 if (System.IO.File.Exists(modelPath))
                 {
-                    // Read the JSON from the file
+                    // Reading the JSON from the file
                     var modelJson = System.IO.File.ReadAllText(modelPath);
 
-                    // Deserialize the JSON to a CART object
+                    // Deserializing the JSON to a CART object
                     return JsonSerializer.Deserialize<CART>(modelJson);
                 }
                 else
@@ -250,52 +247,51 @@ namespace TradeInformant.Pages
             }
             catch (Exception ex)
             {
-                // Handle any exceptions that occur during deserialization
-                // Log the exception, throw, or handle as needed
                 throw new InvalidOperationException("Failed to load model from file.", ex);
             }
         }
 
-        // This method is for training the model with provided training data.
-        public IActionResult OnGetTrainModel([FromQuery] TrainingData trainingData)
+        // This method is for TrainModeling the model with provided TrainModeling data.
+        public IActionResult OnGetTrainModelModel([FromQuery] TrainModelingData TrainModelingData)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            // Convert the training data into the expected format for the CART algorithm
-            List<Dictionary<string, decimal>> features = trainingData.Features;
-            List<string> labels = trainingData.Labels;
+            // Converting the TrainModeling data into the expected format for the CART algorithm
+            List<Dictionary<string, decimal>> Features = TrainModelingData.Features;
+            List<string> Labels = TrainModelingData.Labels;
 
-            // Create an instance of the CART algorithm and train it
+            // Creating an instance of the CART algorithm and TrainModel it
             var cart = new CART();
-            cart.Train(features, labels);
+            cart.TrainModel(Features, Labels);
 
-            // Save the trained model to a file for future predictions
-            SaveModelToFile(cart);
-
-            return new JsonResult(new { Message = "Model trained successfully" });
+            // Saving the TrainModeled model to a file for future predictions
+            SaveModel(cart);
+            // Returning a success message
+            return new JsonResult(new { Message = "Model TrainModeled successfully" });
         }
-
+        // This method is for making predictions with the TrainModeled model.
         public IActionResult OnGetPredictionCalculation([FromQuery] Indicators indicators)
         {
+            // Checking if the model is trained
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            // Load the trained model from a file
-            var cart = LoadModelFromFile();
+            // Loading the TrainModeled model from a file
+            var cart = LoadModel();
 
-            // Ensure your model is trained before making predictions
+            // Ensuring the model is loaded
             if (cart == null)
             {
-                return new JsonResult(new { Error = "The model is not trained or the model file is not found." });
+                return new JsonResult(new { Error = "The model could not load" });
             }
 
-            // Convert the indicators to the expected format
-            var inputFeatures = new Dictionary<string, decimal>
+            // Converting the indicators to the expected format
+            var Input = new Dictionary<string, decimal>
             {
                 { "SMA", indicators.SMA },
                 { "EMA", indicators.EMA },
@@ -305,85 +301,131 @@ namespace TradeInformant.Pages
                 { "histogram", indicators.histogram }
             };
 
-            // Make a prediction
-            var prediction = cart.Predict(inputFeatures);
+            // Making a prediction
+            var prediction = cart.Predict(Input);
 
-            // Return the prediction result
-            return new JsonResult(new {prediction});
+            // Returning the prediction result
+            return new JsonResult(new { prediction });
         }
 
 
 
-        // DTO for training data
-        public class TrainingData
+        // This class is for storing the TrainModeling data
+        public class TrainModelingData
         {
+            // The TrainModeling data is stored as a list of Features and a list of Labels
             public List<Dictionary<string, decimal>> Features { get; set; }
             public List<string> Labels { get; set; }
         }
 
 
+        // Decision tree node class that stores the information about a node in the decision tree
+        public class DecisionTreeNode
+        {
+            public bool IsLeaf { get; set; }
+            public string FeatureToSplit { get; set; }
+            public decimal SplitValue { get; set; }
+            public string Prediction { get; set; }
+            public DecisionTreeNode LeftChild { get; set; }
+            public DecisionTreeNode RightChild { get; set; }
+
+            // Method to make predictions with the decision tree
+            public string Predict(Dictionary<string, decimal> Features)
+            {
+                if (this.IsLeaf)
+                {
+                    // If the node is a leaf, return the prediction
+                    return this.Prediction;
+                }
+                else
+                {
+                    // If the feature value is less than or equal to the split value, traverse the left subtree
+                    if (Features[this.FeatureToSplit] <= this.SplitValue)
+                    {
+                        // Traversing the left subtree
+                        return this.LeftChild.Predict(Features);
+                    }
+                    else
+                    {
+                        // Traversing the right subtree
+                        return this.RightChild.Predict(Features);
+                    }
+                }
+            }
+        }
+
         // Implementation of the CART algorithm
         public class CART
         {
+            // The root node of the decision tree
             public DecisionTreeNode Root { get; set; }
 
+            // Constructor
             public CART()
             {
                 Root = null;
             }
 
-            public void Train(List<Dictionary<string, decimal>> features, List<string> labels)
+            // Traing the model with the provided TrainModeling data
+            public void TrainModel(List<Dictionary<string, decimal>> Features, List<string> Labels)
             {
-                Root = BuildTree(features, labels);
+                // Building the decision tree
+                Root = BuildTree(Features, Labels);
                 if (Root == null)
                 {
-                    // Log error or throw an exception if the root is still null after training
+                    // Logging error or throw an exception if the root is still null after TrainModeling
                     throw new InvalidOperationException("Failed to build the decision tree.");
                 }
 
             }
 
-            private DecisionTreeNode BuildTree(List<Dictionary<string, decimal>> features, List<string> labels)
+            // Method to build the decision tree recursively
+            private DecisionTreeNode BuildTree(List<Dictionary<string, decimal>> Features, List<string> Labels)
             {
-                // Check for stopping conditions
-                if (ShouldStopSplitting(features, labels))
+                // Checking for stopping conditions
+                if (StopSplit(Features, Labels))
                 {
+                    // Returning a leaf node with the most common label
                     return new DecisionTreeNode
                     {
+                        // Setting the IsLeaf property to true
                         IsLeaf = true,
-                        Prediction = labels.GroupBy(x => x).OrderByDescending(x => x.Count()).First().Key
+                        // Finding the most common label
+                        Prediction = Labels.GroupBy(x => x).OrderByDescending(x => x.Count()).First().Key
                     };
                 }
 
-                // Find the best feature and value to split on
-                var (bestFeature, bestValue) = FindBestSplit(features, labels);
+                // Finding the best Feature and Value to split on
+                var (BestFeature, BestValue) = FindBestSplit(Features, Labels);
 
-                // Partition the data into two subsets based on the best split
-                var (leftFeatures, leftLabels, rightFeatures, rightLabels) = PartitionData(features, labels, bestFeature, bestValue);
+                // Partitioning the data into two subsets based on the best split
+                var (LeftFeatures, LeftLabels, RightFeatures, RightLabels) = PartitionData(Features, Labels, BestFeature, BestValue);
 
                 // Recursively build the tree
-                var leftChild = BuildTree(leftFeatures, leftLabels);
-                var rightChild = BuildTree(rightFeatures, rightLabels);
+                var LeftChild = BuildTree(LeftFeatures, LeftLabels);
+                var RightChild = BuildTree(RightFeatures, RightLabels);
 
-                // Return the current node
+                // Returning the current node
                 return new DecisionTreeNode
                 {
-                    FeatureToSplit = bestFeature,
-                    SplitValue = (decimal)bestValue,
-                    LeftChild = leftChild,
-                    RightChild = rightChild
+                    FeatureToSplit = BestFeature,
+                    SplitValue = (decimal)BestValue,
+                    LeftChild = LeftChild,
+                    RightChild = RightChild
                 };
             }
-            private bool ShouldStopSplitting(List<Dictionary<string, decimal>> features, List<string> labels)
+
+            // Method to check for stopping conditions
+            private bool StopSplit(List<Dictionary<string, decimal>> Features, List<string> Labels)
             {
-                // Stop if all labels are the same
-                if (labels.Distinct().Count() == 1)
+                // Stopping if all Labels are the same
+                if (Labels.Distinct().Count() == 1)
                 {
                     return true;
                 }
 
-                // Stop if there are no features left to split on
-                if (features.Count == 0 || features.All(f => f.Count == 0))
+                // Stopping if there are no Features left to split on
+                if (Features.Count == 0 || Features.All(f => f.Count == 0))
                 {
                     return true;
                 }
@@ -394,109 +436,116 @@ namespace TradeInformant.Pages
                 return false;
             }
 
-            private (string bestFeature, decimal bestValue) FindBestSplit(List<Dictionary<string, decimal>> features, List<string> labels)
+            // Splitting the data into two subsets based on a split
+            private (List<Dictionary<string, decimal>> LeftFeatures, List<string> LeftLabels,
+            List<Dictionary<string, decimal>> RightFeatures, List<string> RightLabels)
+            // Method to partition the data into two subsets based on a split
+            PartitionData(List<Dictionary<string, decimal>> Features, List<string> Labels, string Feature, decimal Value)
             {
-                decimal bestGain = decimal.MinValue;
-                string bestFeature = null;
-                decimal? bestValue = null;
+                var LeftFeatures = new List<Dictionary<string, decimal>>();
+                var LeftLabels = new List<string>();
+                var RightFeatures = new List<Dictionary<string, decimal>>();
+                var RightLabels = new List<string>();
 
-
-                // Iterate over every feature
-                foreach (var feature in features.SelectMany(f => f.Keys).Distinct())
+                for (int i = 0; i < Features.Count; i++)
                 {
-                    // Get unique values for the feature
-                    var featureValues = features.Select(f => f[feature]).Distinct().OrderBy(x => x);
-
-                    // Test all possible split values
-                    foreach (var value in featureValues)
+                    if (Features[i][Feature] <= Value)
                     {
-                        var gain = CalculateInformationGain(features, labels, feature, value);
-                        if (gain > bestGain)
-                        {
-                            bestGain = gain;
-                            bestFeature = feature;
-                            bestValue = value;
-                        }
-                    }
-                }
-
-                return (bestFeature, bestValue ?? default);
-            }
-
-            private (List<Dictionary<string, decimal>> leftFeatures, List<string> leftLabels,
-            List<Dictionary<string, decimal>> rightFeatures, List<string> rightLabels)
-            PartitionData(List<Dictionary<string, decimal>> features, List<string> labels, string feature, decimal value)
-            {
-                var leftFeatures = new List<Dictionary<string, decimal>>();
-                var leftLabels = new List<string>();
-                var rightFeatures = new List<Dictionary<string, decimal>>();
-                var rightLabels = new List<string>();
-
-                for (int i = 0; i < features.Count; i++)
-                {
-                    if (features[i][feature] <= value)
-                    {
-                        leftFeatures.Add(features[i]);
-                        leftLabels.Add(labels[i]);
+                        LeftFeatures.Add(Features[i]);
+                        LeftLabels.Add(Labels[i]);
                     }
                     else
                     {
-                        rightFeatures.Add(features[i]);
-                        rightLabels.Add(labels[i]);
+                        RightFeatures.Add(Features[i]);
+                        RightLabels.Add(Labels[i]);
                     }
                 }
 
-                return (leftFeatures, leftLabels, rightFeatures, rightLabels);
+                return (LeftFeatures, LeftLabels, RightFeatures, RightLabels);
             }
-            private decimal CalculateInformationGain(List<Dictionary<string, decimal>> features, List<string> labels, string feature, decimal value)
+
+            // Method to calculate the information gain
+            private decimal InformationGain(List<Dictionary<string, decimal>> Features, List<string> Labels, string Feature, decimal Value)
             {
-                // Split the data
-                var (leftFeatures, leftLabels, rightFeatures, rightLabels) = PartitionData(features, labels, feature, value);
+                // Splitting the data
+                var (LeftFeatures, LeftLabels, RightFeatures, RightLabels) = PartitionData(Features, Labels, Feature, Value);
 
-                // Calculate the entropy before the split
-                decimal originalEntropy = Entropy(labels);
+                // Calculating the entropy before the split
+                decimal originalEntropy = Entropy(Labels);
 
-                // Calculate the entropy after the split
-                decimal leftEntropy = Entropy(leftLabels);
-                decimal rightEntropy = Entropy(rightLabels);
+                // Calculating the entropy after the split
+                decimal leftEntropy = Entropy(LeftLabels);
+                decimal rightEntropy = Entropy(RightLabels);
 
-                // Calculate the weighted average of the entropy after the split
-                decimal weightedEntropy = ((decimal)leftLabels.Count / labels.Count) * leftEntropy
-                                         + ((decimal)rightLabels.Count / labels.Count) * rightEntropy;
+                // Calculating the weighted average of the entropy after the split
+                decimal weightedEntropy = ((decimal)LeftLabels.Count / Labels.Count) * leftEntropy
+                                         + ((decimal)RightLabels.Count / Labels.Count) * rightEntropy;
 
-                // Information gain is the entropy reduction by splitting the data
+                // Information Gain is the entropy reduction by splitting the data
                 decimal informationGain = originalEntropy - weightedEntropy;
 
                 return informationGain;
             }
 
-            private decimal Entropy(List<string> labels)
+            // Method to find the best Feature and Value to split on
+            private (string BestFeature, decimal BestValue) FindBestSplit(List<Dictionary<string, decimal>> Features, List<string> Labels)
             {
-                // Group the labels and count occurrences
-                var labelCounts = labels.GroupBy(l => l).ToDictionary(g => g.Key, g => g.Count());
+                decimal BestGain = decimal.MinValue;
+                string BestFeature = null;
+                decimal? BestValue = null;
 
-                // Calculate the entropy
+
+                // Iterating over every Feature
+                foreach (var Feature in Features.SelectMany(f => f.Keys).Distinct())
+                {
+                    // Getting unique Values for the Feature
+                    var FeatureValues = Features.Select(f => f[Feature]).Distinct().OrderBy(x => x);
+
+                    // Testing all possible split Values
+                    foreach (var Value in FeatureValues)
+                    {
+                        var Gain = InformationGain(Features, Labels, Feature, Value);
+                        if (Gain > BestGain)
+                        {
+                            BestGain = Gain;
+                            BestFeature = Feature;
+                            BestValue = Value;
+                        }
+                    }
+                }
+
+                return (BestFeature, BestValue ?? default);
+            }
+
+            // Method to calculate the entropy which is the measure of impurity in a set of Labels
+            private decimal Entropy(List<string> Labels)
+            {
+                // Grouping the Labels and count occurrences
+                var labelCounts = Labels.GroupBy(l => l).ToDictionary(g => g.Key, g => g.Count());
+
+                // Calculating the entropy
                 decimal entropy = 0;
                 foreach (var labelCount in labelCounts)
                 {
-                    double probability = (double)labelCount.Value / labels.Count;
+                    double probability = (double)labelCount.Value / Labels.Count;
                     entropy -= (decimal)(probability * Math.Log(probability, 2));
                 }
 
                 return entropy;
             }
 
-
-            public string Predict(Dictionary<string, decimal> inputFeatures)
+            // Predicting the label for a single data point
+            public string Predict(Dictionary<string, decimal> Input)
             {
                 if (Root == null)
                 {
-                    throw new InvalidOperationException("The model has not been trained.");
+                    throw new InvalidOperationException("The model has not been TrainModeled.");
                 }
-                return PredictFromNode(Root, inputFeatures);
+                return PredictFromNode(Root, Input);
             }
 
-            private string PredictFromNode(DecisionTreeNode node, Dictionary<string, decimal> features)
+            // Predicting the label for a single data point from a given node
+            private string PredictFromNode(DecisionTreeNode node, Dictionary<string, decimal> Features)
             {
                 // Base case: if the node is a leaf, return the prediction
                 if (node.IsLeaf)
@@ -504,45 +553,14 @@ namespace TradeInformant.Pages
                     return node.Prediction;
                 }
 
-                // Recursive case: traverse the tree based on the feature's value
-                if (features[node.FeatureToSplit] <= node.SplitValue)
+                // Recursive case: traverse the tree based on the Feature's Value
+                if (Features[node.FeatureToSplit] <= node.SplitValue)
                 {
-                    return PredictFromNode(node.LeftChild, features);
+                    return PredictFromNode(node.LeftChild, Features);
                 }
                 else
                 {
-                    return PredictFromNode(node.RightChild, features);
-                }
-            }
-        }
-
-
-        // Decision tree node class
-        public class DecisionTreeNode
-        {
-            public bool IsLeaf { get; set; }
-            public string FeatureToSplit { get; set; }
-            public decimal SplitValue { get; set; }
-            public string Prediction { get; set; }
-            public DecisionTreeNode LeftChild { get; set; }
-            public DecisionTreeNode RightChild { get; set; }
-
-            public string Predict(Dictionary<string, decimal> features)
-            {
-                if (this.IsLeaf)
-                {
-                    return this.Prediction;
-                }
-                else
-                {
-                    if (features[this.FeatureToSplit] <= this.SplitValue)
-                    {
-                        return this.LeftChild.Predict(features);
-                    }
-                    else
-                    {
-                        return this.RightChild.Predict(features);
-                    }
+                    return PredictFromNode(node.RightChild, Features);
                 }
             }
         }

@@ -305,9 +305,9 @@ function DataForMLA(indicators) {
 
 
 function UpdateDisplayWithPrediction(predictionData) {
-    const predictionElement = document.getElementById('StockResult');
+    const predictionElement = document.getElementById('PredictionResult');
     if (predictionElement) {
-        predictionElement.textContent = `Predictions: ${predictionData.prediction}`;
+        predictionElement.textContent = `Prediction: ${predictionData.prediction}`;
     }
 }
 
