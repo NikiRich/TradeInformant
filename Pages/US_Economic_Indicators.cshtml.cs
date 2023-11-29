@@ -7,6 +7,7 @@ namespace TradeInformant.Pages
 {
     public class US_Economic_IndicatorsModel : PageModel
     {
+        // Variables to store the number of entries requested
         public int RealGDPperiod { get; set; }
         public string? RealGDP { get; set; }
         public int RealGDPperCapitaPeriod { get; set; }
@@ -15,6 +16,7 @@ namespace TradeInformant.Pages
         public int InflationPeriod { get; set; }
         public int UnemploymentRatePeriod { get; set; }
 
+        // Variables to store the name of the API
         public string RealGDP_name = "REAL_GDP";
         public string CPI_name = "CPI";
         public string RealGDPperCapita = "REAL_GDP_PER_CAPITA";
@@ -114,14 +116,14 @@ namespace TradeInformant.Pages
         // Function to get the data from the API
         public IActionResult OnGetRGDP(int? RealGDPperiod, string? RealGDP)
         {
+            this.RealGDPperiod = RealGDPperiod.Value;
+            this.RealGDP = RealGDP;
             // Checking if the number of entries requested is valid
-            if (!RealGDPperiod.HasValue || RealGDPperiod.Value <= 0)
+            if (!RealGDPperiod.HasValue || RealGDPperiod.Value <= 0 || RealGDPperiod.Value > 100)
             {
                 return BadRequest("Invalid number of entries requested.");
             }
 
-            this.RealGDPperiod = RealGDPperiod.Value;
-            this.RealGDP = RealGDP;
             // Switch statement to convert the string to the required format for the API
             switch (RealGDP)
             {
@@ -242,13 +244,13 @@ namespace TradeInformant.Pages
         // Function to get the data from the API
         public IActionResult OnGetRGDPpC(int? RealGDPperCapitaPeriod)
         {
+            this.RealGDPperCapitaPeriod = RealGDPperCapitaPeriod.Value;
+
             // Checking if the number of entries requested is valid
-            if (!RealGDPperCapitaPeriod.HasValue || RealGDPperCapitaPeriod.Value <= 0)
+            if (!RealGDPperCapitaPeriod.HasValue || RealGDPperCapitaPeriod.Value <= 0 || RealGDPperCapitaPeriod.Value > 100)
             {
                 return BadRequest("Invalid number of entries requested.");
             }
-
-            this.RealGDPperCapitaPeriod = RealGDPperCapitaPeriod.Value;
 
             const string API_KEY = "1F6SLA57L4NZM1DR";
             // Creating the URL to get the data from the API
@@ -356,13 +358,14 @@ namespace TradeInformant.Pages
         // Function to get the data from the API
         public IActionResult OnGetCPI(int? CPIperiod, string? CPI)
         {
-            if (!CPIperiod.HasValue || CPIperiod.Value <= 0)
+            this.CPIperiod = CPIperiod.Value;
+            this.CPI = CPI;
+            // Checking if the number of entries requested is valid
+            if (!CPIperiod.HasValue || CPIperiod.Value <= 0 || CPIperiod.Value > 100)
             {
                 return BadRequest("Invalid number of entries requested.");
             }
-            this.CPIperiod = CPIperiod.Value;
-            this.CPI = CPI;
-
+            // Switch statement to convert the string to the required format for the API
             switch (CPI)
             {
                 case "Monthly":
@@ -482,13 +485,13 @@ namespace TradeInformant.Pages
         // Function to get the data from the API
         public IActionResult OnGetInflation(int? InflationPeriod)
         {
+            // Setting the value of the variable
+            this.InflationPeriod = InflationPeriod.Value;
             // Checking if the number of entries requested is valid
-            if (!InflationPeriod.HasValue || InflationPeriod.Value <= 0)
+            if (!InflationPeriod.HasValue || InflationPeriod.Value <= 0 || InflationPeriod.Value > 100)
             {
                 return BadRequest("Invalid number of entries requested.");
             }
-
-            this.InflationPeriod = InflationPeriod.Value;
 
             const string API_KEY = "1F6SLA57L4NZM1DR";
             // Creating the URL to get the data from the API
@@ -600,13 +603,13 @@ namespace TradeInformant.Pages
         // Function to get the data from the API
         public IActionResult OnGetUnemployment(int? UnemploymentRatePeriod)
         {
+
+            this.UnemploymentRatePeriod = UnemploymentRatePeriod.Value;
             // Checking if the number of entries requested is valid
-            if (!UnemploymentRatePeriod.HasValue || UnemploymentRatePeriod.Value <= 0)
+            if (!UnemploymentRatePeriod.HasValue || UnemploymentRatePeriod.Value <= 0 || UnemploymentRatePeriod.Value > 100)
             {
                 return BadRequest("Invalid number of entries requested.");
             }
-
-            this.UnemploymentRatePeriod = UnemploymentRatePeriod.Value;
 
             const string API_KEY = "1F6SLA57L4NZM1DR";
             // Creating the URL to get the data from the API
