@@ -2,9 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.Text.Json;
 using System.Net;
-using System;
-using System.Text.Json.Serialization.Metadata;
-using System.Security.Cryptography.X509Certificates;
 
 namespace TradeInformant.Pages
 {
@@ -17,6 +14,7 @@ namespace TradeInformant.Pages
         public string? CPI { get; set; }
         public int InflationPeriod { get; set; }
         public int UnemploymentRatePeriod { get; set; }
+
         public string RealGDP_name = "REAL_GDP";
         public string CPI_name = "CPI";
         public string RealGDPperCapita = "REAL_GDP_PER_CAPITA";
@@ -49,34 +47,34 @@ namespace TradeInformant.Pages
 
 
         // Function to get the cache file name
-        public string GetCacheFileName(string RealGDP_name)
+        public string GetCache(string RealGDP_name)
         {
-            // Create the file name
+            // Creating the file name
             var fileName = $"cache_{RealGDP_name}.json";
-            // Return the path to the cache file
+            // Returing the path to the cache file
             return Path.Combine(CacheDirectory, fileName);
         }
 
 
         // Function to load the cache from the file
-        public Dictionary<string, dynamic>? LoadCacheFromFile(string RealGDP_name)
+        public Dictionary<string, dynamic>? LoadCache(string RealGDP_name)
         {
-            // Get the path to the cache file
-            string filePath = GetCacheFileName(RealGDP_name);
+            // Getting the path to the cache file
+            string filePath = GetCache(RealGDP_name);
 
-            // Check if the file exists
+            // Checking if the file exists
             if (System.IO.File.Exists(filePath))
             {
                 try
                 {
-                    // Read the file
+                    // Reading the file
                     var jsonString = System.IO.File.ReadAllText(filePath);
-                    // Deserialize the file
+                    // Deserializing the file
                     var cacheEntry = JsonSerializer.Deserialize<CacheEntry>(jsonString);
-                    // Check if the cache is valid
+                    // Checking if the cache is valid
                     if (cacheEntry != null && DateTime.UtcNow - cacheEntry.Timestamp < CacheDuration)
                     {
-                        // Return the data
+                        // Returning the data
                         return cacheEntry.Data ?? new Dictionary<string, dynamic>();
                     }
                 }
@@ -85,7 +83,7 @@ namespace TradeInformant.Pages
                     Console.WriteLine($"Error reading or deserializing cache for {RealGDP_name}: {e.Message}");
                 }
             }
-            // Return null if the cache is not valid
+            // Returning null if the cache is not valid
             return null;
         }
 
@@ -93,29 +91,30 @@ namespace TradeInformant.Pages
 
 
         // Function to save the cache to the file
-        public void SaveCacheToFile(Dictionary<string, dynamic> data, string RealGDP_name)
+        public void SaveCache(Dictionary<string, dynamic> data, string RealGDP_name)
         {
-            // Create the cache entry
+            // Creating the cache entry
             var cacheEntry = new CacheEntry
             {
-                // Store the data
+                // Storing the data
                 Data = data,
                 // Store the current time
                 Timestamp = DateTime.UtcNow
             };
-            // Get the path to the cache file
-            string filePath = GetCacheFileName(RealGDP_name);
+            // Getting the path to the cache file
+            string filePath = GetCache(RealGDP_name);
 
-            // Write the cache to the file in a thread-safe manner
+            // Writing the cache to the file in a thread-safe manner
             lock (filePath)
             {
                 System.IO.File.WriteAllText(filePath, JsonSerializer.Serialize(cacheEntry));
             }
         }
 
-
+        // Function to get the data from the API
         public IActionResult OnGetRGDP(int? RealGDPperiod, string? RealGDP)
         {
+            // Checking if the number of entries requested is valid
             if (!RealGDPperiod.HasValue || RealGDPperiod.Value <= 0)
             {
                 return BadRequest("Invalid number of entries requested.");
@@ -123,6 +122,7 @@ namespace TradeInformant.Pages
 
             this.RealGDPperiod = RealGDPperiod.Value;
             this.RealGDP = RealGDP;
+            // Switch statement to convert the string to the required format for the API
             switch (RealGDP)
             {
                 case "Annualy":
@@ -132,25 +132,33 @@ namespace TradeInformant.Pages
                     RealGDP = "quarterly";
                     break;
             }
-            const string API_KEY = "1F6SLA57L4NZM1DR";
-            string url = $"https://www.alphavantage.co/query?function={RealGDP_name}&interval={RealGDP}&apikey={API_KEY}";
 
+            const string API_KEY = "1F6SLA57L4NZM1DR";
+            // Creating the URL to get the data from the API
+            string url = $"https://www.alphavantage.co/query?function={RealGDP_name}&interval={RealGDP}&apikey={API_KEY}";
+            // Creating the URI to handle the URL
             Uri uri = new Uri(url);
-            _ = LoadCacheFromFile(RealGDP_name);
+            // Loading the cache
+            _ = LoadCache(RealGDP_name);
+
             try
             {
+                // Creating a new WebClient
                 using (WebClient client = new WebClient())
                 {
+                    // Downloading the data from the API
                     string jsonString = client.DownloadString(uri);
                     Dictionary<string, dynamic>? json_data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(jsonString);
                     // Assuming json_data contains a "data" key which is an array of data points
-                    // Trim the data to the requested number of entries if necessary
                     if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> dataPoints)
                     {
+                        // Trimming the data to the requested number of entries if necessary
                         json_data["data"] = dataPoints.Take(RealGDPperiod.Value).ToList();
                     }
 
-                    SaveCacheToFile(json_data, RealGDP_name);
+                    // Saving the cache
+                    SaveCache(json_data, RealGDP_name);
+                    // Returning the data
                     return new JsonResult(json_data);
                 }
             }
@@ -160,6 +168,7 @@ namespace TradeInformant.Pages
             }
         }
 
+        // Second class to store the cache entry
         public class CacheEntry2
         {
             // Dictionary to store the data
@@ -168,34 +177,34 @@ namespace TradeInformant.Pages
             public DateTime Timestamp2 { get; set; }
         }
 
-        public string GetCacheFileName2(string RealGDPperCapita)
+        public string GetCache2(string RealGDPperCapita)
         {
-            // Create the file name
+            // Creating the file name
             var fileName = $"cache_{RealGDPperCapita}.json";
-            // Return the path to the cache file
+            // Returning the path to the cache file
             return Path.Combine(CacheDirectory, fileName);
         }
 
 
         // Function to load the cache from the file
-        public Dictionary<string, dynamic>? LoadCacheFromFile2(string RealGDPperCapita)
+        public Dictionary<string, dynamic>? LoadCache2(string RealGDPperCapita)
         {
-            // Get the path to the cache file
-            string filePath = GetCacheFileName2(RealGDPperCapita);
+            // Getting the path to the cache file
+            string filePath = GetCache2(RealGDPperCapita);
 
-            // Check if the file exists
+            // Checking if the file exists
             if (System.IO.File.Exists(filePath))
             {
                 try
                 {
-                    // Read the file
+                    // Reading the file
                     var jsonString = System.IO.File.ReadAllText(filePath);
-                    // Deserialize the file
+                    // Deserializing the file
                     var cacheEntry2 = JsonSerializer.Deserialize<CacheEntry2>(jsonString);
-                    // Check if the cache is valid
+                    // Checking if the cache is valid
                     if (cacheEntry2 != null && DateTime.UtcNow - cacheEntry2.Timestamp2 < CacheDuration)
                     {
-                        // Return the data
+                        // Returning the data
                         return cacheEntry2.Data2 ?? new Dictionary<string, dynamic>();
                     }
                 }
@@ -204,37 +213,36 @@ namespace TradeInformant.Pages
                     Console.WriteLine($"Error reading or deserializing cache for {RealGDPperCapita}: {e.Message}");
                 }
             }
-            // Return null if the cache is not valid
+            // Returning null if the cache is not valid
             return null;
         }
 
 
-
-
         // Function to save the cache to the file
-        public void SaveCacheToFile2(Dictionary<string, dynamic> data, string RealGDPperCapita)
+        public void SaveCache2(Dictionary<string, dynamic> data, string RealGDPperCapita)
         {
-            // Create the cache entry
+            // Creating the cache entry
             var cacheEntry2 = new CacheEntry2
             {
-                // Store the data
+                // Storing the data
                 Data2 = data,
-                // Store the current time
+                // Storing the current time
                 Timestamp2 = DateTime.UtcNow
             };
-            // Get the path to the cache file
-            string filePath = GetCacheFileName2(RealGDPperCapita);
+            // Getting the path to the cache file
+            string filePath = GetCache2(RealGDPperCapita);
 
-            // Write the cache to the file in a thread-safe manner
+            // Writing the cache to the file in a thread-safe manner
             lock (filePath)
             {
                 System.IO.File.WriteAllText(filePath, JsonSerializer.Serialize(cacheEntry2));
             }
         }
 
-
+        // Function to get the data from the API
         public IActionResult OnGetRGDPpC(int? RealGDPperCapitaPeriod)
         {
+            // Checking if the number of entries requested is valid
             if (!RealGDPperCapitaPeriod.HasValue || RealGDPperCapitaPeriod.Value <= 0)
             {
                 return BadRequest("Invalid number of entries requested.");
@@ -243,24 +251,30 @@ namespace TradeInformant.Pages
             this.RealGDPperCapitaPeriod = RealGDPperCapitaPeriod.Value;
 
             const string API_KEY = "1F6SLA57L4NZM1DR";
+            // Creating the URL to get the data from the API
             string url = $"https://www.alphavantage.co/query?function={RealGDPperCapita}&apikey={API_KEY}";
-
+            // Creating the URI to handle the URL
             Uri uri = new Uri(url);
-            _ = LoadCacheFromFile2(RealGDPperCapita);
+            // Loading the cache
+            _ = LoadCache2(RealGDPperCapita);
             try
             {
+                // Creating a new WebClient
                 using (WebClient client = new WebClient())
                 {
+                    // Downloading the data from the API
                     string jsonString = client.DownloadString(uri);
                     Dictionary<string, dynamic>? json_data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(jsonString);
                     // Assuming json_data contains a "data" key which is an array of data points
-                    // Trim the data to the requested number of entries if necessary
                     if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> dataPoints)
                     {
+                        // Trimming the data to the requested number of entries if necessary
                         json_data["data"] = dataPoints.Take(RealGDPperCapitaPeriod.Value).ToList();
                     }
 
-                    SaveCacheToFile2(json_data, RealGDPperCapita);
+                    // Saving the cache
+                    SaveCache2(json_data, RealGDPperCapita);
+                    // Returning the data
                     return new JsonResult(json_data);
                 }
             }
@@ -270,6 +284,7 @@ namespace TradeInformant.Pages
             }
         }
 
+        // Third class to store the cache entry
         public class CacheEntry3
         {
             // Dictionary to store the data
@@ -278,34 +293,33 @@ namespace TradeInformant.Pages
             public DateTime Timestamp3 { get; set; }
         }
 
-        public string GetCacheFileName3(string CPI_name)
+        public string GetCache3(string CPI_name)
         {
-            // Create the file name
+            // Creating the file name
             var fileName = $"cache_{CPI_name}.json";
-            // Return the path to the cache file
+            // Returning the path to the cache file
             return Path.Combine(CacheDirectory, fileName);
         }
 
 
-        // Function to load the cache from the file
-        public Dictionary<string, dynamic>? LoadCacheFromFile3(string CPI_name)
+        public Dictionary<string, dynamic>? LoadCache3(string CPI_name)
         {
-            // Get the path to the cache file
-            string filePath = GetCacheFileName3(CPI_name);
+            // Getting the path to the cache file
+            string filePath = GetCache3(CPI_name);
 
-            // Check if the file exists
+            // Checking if the file exists
             if (System.IO.File.Exists(filePath))
             {
                 try
                 {
-                    // Read the file
+                    // Reading the file
                     var jsonString = System.IO.File.ReadAllText(filePath);
-                    // Deserialize the file
+                    // Deserializing the file
                     var cacheEntry3 = JsonSerializer.Deserialize<CacheEntry3>(jsonString);
-                    // Check if the cache is valid
+                    // Checking if the cache is valid
                     if (cacheEntry3 != null && DateTime.UtcNow - cacheEntry3.Timestamp3 < CacheDuration)
                     {
-                        // Return the data
+                        // Returning the data
                         return cacheEntry3.Data3 ?? new Dictionary<string, dynamic>();
                     }
                 }
@@ -314,34 +328,32 @@ namespace TradeInformant.Pages
                     Console.WriteLine($"Error reading or deserializing cache for {CPI_name}: {e.Message}");
                 }
             }
-            // Return null if the cache is not valid
+            // Returning null if the cache is not valid
             return null;
         }
 
 
-
-
-        // Function to save the cache to the file
-        public void SaveCacheToFile3(Dictionary<string, dynamic> data, string CPI_name)
+        public void SaveCache3(Dictionary<string, dynamic> data, string CPI_name)
         {
-            // Create the cache entry
+            // Createing the cache entry
             var cacheEntry3 = new CacheEntry3
             {
-                // Store the data
+                // Storing the data
                 Data3 = data,
-                // Store the current time
+                // Storing the current time
                 Timestamp3 = DateTime.UtcNow
             };
-            // Get the path to the cache file
-            string filePath = GetCacheFileName3(CPI_name);
+            // Gettting the path to the cache file
+            string filePath = GetCache3(CPI_name);
 
-            // Write the cache to the file in a thread-safe manner
+            // Writing the cache to the file in a thread-safe manner
             lock (filePath)
             {
                 System.IO.File.WriteAllText(filePath, JsonSerializer.Serialize(cacheEntry3));
             }
         }
 
+        // Function to get the data from the API
         public IActionResult OnGetCPI(int? CPIperiod, string? CPI)
         {
             if (!CPIperiod.HasValue || CPIperiod.Value <= 0)
@@ -362,23 +374,29 @@ namespace TradeInformant.Pages
             }
 
             const string API_KEY = "1F6SLA57L4NZM1DR";
+            // Creating the URL to get the data from the API
             string url = $"https://www.alphavantage.co/query?function={CPI_name}&interval={CPI}&apikey={API_KEY}";
+            // Creating the URI to handle the URL
             Uri uri = new Uri(url);
-            _ = LoadCacheFromFile3(CPI_name);
+            // Loading the cache
+            _ = LoadCache3(CPI_name);
+
             try
             {
+                // Creating a new WebClient
                 using (WebClient client = new WebClient())
                 {
+                    // Downloading the data from the API
                     string jsonString = client.DownloadString(uri);
                     Dictionary<string, dynamic>? json_data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(jsonString);
                     // Assuming json_data contains a "data" key which is an array of data points
-                    // Trim the data to the requested number of entries if necessary
                     if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> dataPoints)
                     {
+                        // Trimming the data to the requested number of entries if necessary
                         json_data["data"] = dataPoints.Take(CPIperiod.Value).ToList();
                     }
 
-                    SaveCacheToFile3(json_data, CPI_name);
+                    SaveCache3(json_data, CPI_name);
                     return new JsonResult(json_data);
                 }
             }
@@ -388,6 +406,7 @@ namespace TradeInformant.Pages
             }
         }
 
+        // Fourth class to store the cache entry
         public class CacheEntry4
         {
             // Dictionary to store the data
@@ -396,34 +415,34 @@ namespace TradeInformant.Pages
             public DateTime Timestamp4 { get; set; }
         }
 
-        public string GetCacheFileName4(string Inflation)
+        public string GetCache4(string Inflation)
         {
-            // Create the file name
+            // Creating the file name
             var fileName = $"cache_{Inflation}.json";
-            // Return the path to the cache file
+            // Returning the path to the cache file
             return Path.Combine(CacheDirectory, fileName);
         }
 
 
         // Function to load the cache from the file
-        public Dictionary<string, dynamic>? LoadCacheFromFile4(string Inflation)
+        public Dictionary<string, dynamic>? LoadCache4(string Inflation)
         {
-            // Get the path to the cache file
-            string filePath = GetCacheFileName4(Inflation);
+            // Getting the path to the cache file
+            string filePath = GetCache4(Inflation);
 
-            // Check if the file exists
+            // Checking if the file exists
             if (System.IO.File.Exists(filePath))
             {
                 try
                 {
-                    // Read the file
+                    // Reading the file
                     var jsonString = System.IO.File.ReadAllText(filePath);
-                    // Deserialize the file
+                    // Deserializing the file
                     var cacheEntry4 = JsonSerializer.Deserialize<CacheEntry4>(jsonString);
-                    // Check if the cache is valid
+                    // Checking if the cache is valid
                     if (cacheEntry4 != null && DateTime.UtcNow - cacheEntry4.Timestamp4 < CacheDuration)
                     {
-                        // Return the data
+                        // Returning the data
                         return cacheEntry4.Data4 ?? new Dictionary<string, dynamic>();
                     }
                 }
@@ -432,7 +451,7 @@ namespace TradeInformant.Pages
                     Console.WriteLine($"Error reading or deserializing cache for {Inflation}: {e.Message}");
                 }
             }
-            // Return null if the cache is not valid
+            // Returning null if the cache is not valid
             return null;
         }
 
@@ -440,29 +459,30 @@ namespace TradeInformant.Pages
 
 
         // Function to save the cache to the file
-        public void SaveCacheToFile4(Dictionary<string, dynamic> data, string Inflation)
+        public void SaveCache4(Dictionary<string, dynamic> data, string Inflation)
         {
-            // Create the cache entry
+            // Creating the cache entry
             var cacheEntry4 = new CacheEntry4
             {
-                // Store the data
+                // Storing the data
                 Data4 = data,
-                // Store the current time
+                // Storing the current time
                 Timestamp4 = DateTime.UtcNow
             };
-            // Get the path to the cache file
-            string filePath = GetCacheFileName4(Inflation);
+            // Getting the path to the cache file
+            string filePath = GetCache4(Inflation);
 
-            // Write the cache to the file in a thread-safe manner
+            // Writing the cache to the file in a thread-safe manner
             lock (filePath)
             {
                 System.IO.File.WriteAllText(filePath, JsonSerializer.Serialize(cacheEntry4));
             }
         }
 
-
+        // Function to get the data from the API
         public IActionResult OnGetInflation(int? InflationPeriod)
         {
+            // Checking if the number of entries requested is valid
             if (!InflationPeriod.HasValue || InflationPeriod.Value <= 0)
             {
                 return BadRequest("Invalid number of entries requested.");
@@ -471,24 +491,31 @@ namespace TradeInformant.Pages
             this.InflationPeriod = InflationPeriod.Value;
 
             const string API_KEY = "1F6SLA57L4NZM1DR";
+            // Creating the URL to get the data from the API
             string url = $"https://www.alphavantage.co/query?function={Inflation}&apikey={API_KEY}";
-
+            // Creating the URI to handle the URL
             Uri uri = new Uri(url);
-            _ = LoadCacheFromFile4(Inflation);
+
+            _ = LoadCache4(Inflation);
+
             try
             {
+                // Creating a new WebClient
                 using (WebClient client = new WebClient())
                 {
+                    // Downloading the data from the API
                     string jsonString = client.DownloadString(uri);
+                    // Deserializing the file
                     Dictionary<string, dynamic>? json_data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(jsonString);
                     // Assuming json_data contains a "data" key which is an array of data points
-                    // Trim the data to the requested number of entries if necessary
                     if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> dataPoints)
                     {
+                        // Trimming the data to the requested number of entries if necessary
                         json_data["data"] = dataPoints.Take(InflationPeriod.Value).ToList();
                     }
-
-                    SaveCacheToFile4(json_data, Inflation);
+                    // Saving the cache
+                    SaveCache4(json_data, Inflation);
+                    // Returning the data
                     return new JsonResult(json_data);
                 }
             }
@@ -498,6 +525,7 @@ namespace TradeInformant.Pages
             }
         }
 
+        // Fifth class to store the cache entry
         public class CacheEntry5
         {
             // Dictionary to store the data
@@ -506,34 +534,35 @@ namespace TradeInformant.Pages
             public DateTime Timestamp5 { get; set; }
         }
 
-        public string GetCacheFileName5(string UnemploymentRate)
+        // Function to get the cache file name
+        public string GetCache5(string UnemploymentRate)
         {
-            // Create the file name
+            // Creating the file name
             var fileName = $"cache_{UnemploymentRate}.json";
-            // Return the path to the cache file
+            // Returning the path to the cache file
             return Path.Combine(CacheDirectory, fileName);
         }
 
 
         // Function to load the cache from the file
-        public Dictionary<string, dynamic>? LoadCacheFromFile5(string UnemploymentRate)
+        public Dictionary<string, dynamic>? LoadCache5(string UnemploymentRate)
         {
-            // Get the path to the cache file
-            string filePath = GetCacheFileName5(UnemploymentRate);
+            // Getting the path to the cache file
+            string filePath = GetCache5(UnemploymentRate);
 
-            // Check if the file exists
+            // Checking if the file exists
             if (System.IO.File.Exists(filePath))
             {
                 try
                 {
-                    // Read the file
+                    // Reading the file
                     var jsonString = System.IO.File.ReadAllText(filePath);
-                    // Deserialize the file
+                    // Deserializing the file
                     var cacheEntry5 = JsonSerializer.Deserialize<CacheEntry5>(jsonString);
-                    // Check if the cache is valid
+                    // Checking if the cache is valid
                     if (cacheEntry5 != null && DateTime.UtcNow - cacheEntry5.Timestamp5 < CacheDuration)
                     {
-                        // Return the data
+                        // Returning the data
                         return cacheEntry5.Data5 ?? new Dictionary<string, dynamic>();
                     }
                 }
@@ -542,37 +571,36 @@ namespace TradeInformant.Pages
                     Console.WriteLine($"Error reading or deserializing cache for {UnemploymentRate}: {e.Message}");
                 }
             }
-            // Return null if the cache is not valid
+            // Returning null if the cache is not valid
             return null;
         }
 
 
-
-
         // Function to save the cache to the file
-        public void SaveCacheToFile5(Dictionary<string, dynamic> data, string UnemploymentRate)
+        public void SaveCache5(Dictionary<string, dynamic> data, string UnemploymentRate)
         {
-            // Create the cache entry
+            // Creating the cache entry
             var cacheEntry4 = new CacheEntry5
             {
-                // Store the data
+                // Storing the data
                 Data5 = data,
-                // Store the current time
+                // Storing the current time
                 Timestamp5 = DateTime.UtcNow
             };
-            // Get the path to the cache file
-            string filePath = GetCacheFileName5(UnemploymentRate);
+            // Getting the path to the cache file
+            string filePath = GetCache5(UnemploymentRate);
 
-            // Write the cache to the file in a thread-safe manner
+            // Writing the cache to the file in a thread-safe manner
             lock (filePath)
             {
                 System.IO.File.WriteAllText(filePath, JsonSerializer.Serialize(cacheEntry4));
             }
         }
 
-
+        // Function to get the data from the API
         public IActionResult OnGetUnemployment(int? UnemploymentRatePeriod)
         {
+            // Checking if the number of entries requested is valid
             if (!UnemploymentRatePeriod.HasValue || UnemploymentRatePeriod.Value <= 0)
             {
                 return BadRequest("Invalid number of entries requested.");
@@ -581,24 +609,30 @@ namespace TradeInformant.Pages
             this.UnemploymentRatePeriod = UnemploymentRatePeriod.Value;
 
             const string API_KEY = "1F6SLA57L4NZM1DR";
+            // Creating the URL to get the data from the API
             string url = $"https://www.alphavantage.co/query?function={UnemploymentRate}&apikey={API_KEY}";
-
+            // Creating the URI to handle the URL
             Uri uri = new Uri(url);
-            _ = LoadCacheFromFile5(UnemploymentRate);
+            // Loading the cache
+            _ = LoadCache5(UnemploymentRate);
+
             try
             {
+                // Creating a new WebClient
                 using (WebClient client = new WebClient())
                 {
+                    // Downloading the data from the API
                     string jsonString = client.DownloadString(uri);
                     Dictionary<string, dynamic>? json_data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(jsonString);
                     // Assuming json_data contains a "data" key which is an array of data points
-                    // Trim the data to the requested number of entries if necessary
                     if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> dataPoints)
                     {
+                        // Trimming the data to the requested number of entries if necessary
                         json_data["data"] = dataPoints.Take(UnemploymentRatePeriod.Value).ToList();
                     }
-
-                    SaveCacheToFile5(json_data, UnemploymentRate);
+                    // Saving the cache
+                    SaveCache5(json_data, UnemploymentRate);
+                    // Returning the data
                     return new JsonResult(json_data);
                 }
             }
