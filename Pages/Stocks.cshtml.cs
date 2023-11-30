@@ -41,7 +41,7 @@ namespace TradeInformant.Pages
 
 
         // Function to get the cache file name
-        public string GetCacheFileName(string StockName, string Interval)
+        public string GetCache(string StockName, string Interval)
         {
             // Creating the file name
             var fileName = $"cache_{StockName}_{Interval}.json";
@@ -51,10 +51,10 @@ namespace TradeInformant.Pages
 
 
         // Function to load the cache from the file
-        public Dictionary<string, dynamic>? LoadCacheFromFile(string StockName, string Interval)
+        public Dictionary<string, dynamic>? LoadCache(string StockName, string Interval)
         {
             // Getting the path to the cache file
-            string filePath = GetCacheFileName(StockName, Interval);
+            string filePath = GetCache(StockName, Interval);
 
             // Checking if the file exists
             if (System.IO.File.Exists(filePath))
@@ -94,7 +94,7 @@ namespace TradeInformant.Pages
                 Timestamp = DateTime.UtcNow
             };
             // Getting the path to the cache file
-            string filePath = GetCacheFileName(StockName, Interval);
+            string filePath = GetCache(StockName, Interval);
 
             // Writing the cache to the file in a thread-safe manner
             lock (filePath)
@@ -147,7 +147,7 @@ namespace TradeInformant.Pages
             Uri uri = new Uri(url);
 
             // Loading the cache from the file
-            Dictionary<string, dynamic>? jsonInfo = LoadCacheFromFile(StockName, Interval);
+            Dictionary<string, dynamic>? jsonInfo = LoadCache(StockName, Interval);
 
             // Checking if the cache is null
             if (jsonInfo == null)
@@ -252,7 +252,7 @@ namespace TradeInformant.Pages
         }
 
         // This method is for TrainModeling the model with provided TrainModeling data.
-        public IActionResult OnGetTrainModelModel([FromQuery] TrainModelingData TrainModelingData)
+        public IActionResult OnGetTrainModel([FromQuery] TrainModelingData TrainModelingData)
         {
             if (!ModelState.IsValid)
             {
@@ -329,20 +329,20 @@ namespace TradeInformant.Pages
             public DecisionTreeNode LeftChild { get; set; }
             public DecisionTreeNode RightChild { get; set; }
 
-            // Method to make predictions with the decision tree
+            // Method to make predictions with the decision tree starting from the current node for a single data point
             public string Predict(Dictionary<string, decimal> Features)
             {
                 if (this.IsLeaf)
                 {
-                    // If the node is a leaf, return the prediction
+                    // If the node is a leaf, return the prediction stored in the node
                     return this.Prediction;
                 }
                 else
                 {
-                    // If the feature value is less than or equal to the split value, traverse the left subtree
+                    // If the feature value is less than or equal to the split value, traverse the left subtree 
                     if (Features[this.FeatureToSplit] <= this.SplitValue)
                     {
-                        // Traversing the left subtree
+                        // Traversing the left subtree  
                         return this.LeftChild.Predict(Features);
                     }
                     else
@@ -379,7 +379,7 @@ namespace TradeInformant.Pages
 
             }
 
-            // Method to build the decision tree recursively
+            // Method for building the decision tree with the provided TrainModeling data
             private DecisionTreeNode BuildTree(List<Dictionary<string, decimal>> Features, List<string> Labels)
             {
                 // Checking for stopping conditions
@@ -430,9 +430,6 @@ namespace TradeInformant.Pages
                     return true;
                 }
 
-                // Additional stopping conditions like maximum tree depth or minimum node size can be added here
-
-                // If none of the stopping conditions are met, do not stop splitting
                 return false;
             }
 

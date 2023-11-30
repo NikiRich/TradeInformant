@@ -151,16 +151,16 @@ namespace TradeInformant.Pages
                     // Downloading the data from the API
                     string jsonString = client.DownloadString(uri);
                     Dictionary<string, dynamic>? json_data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(jsonString);
-                    // Assuming json_data contains a "data" key which is an array of data points
-                    if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> dataPoints)
+                    // Checking if the dictionary contains a "data" key which is an array of data points
+                    if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> DataPoints)
                     {
                         // Trimming the data to the requested number of entries if necessary
-                        json_data["data"] = dataPoints.Take(RealGDPperiod.Value).ToList();
+                        json_data["data"] = DataPoints.Take(RealGDPperiod.Value).ToList();
                     }
 
                     // Saving the cache
                     SaveCache(json_data, RealGDP_name);
-                    // Returning the data
+                    // Returning the data as a JSON object
                     return new JsonResult(json_data);
                 }
             }
@@ -266,17 +266,18 @@ namespace TradeInformant.Pages
                 {
                     // Downloading the data from the API
                     string jsonString = client.DownloadString(uri);
+                    // Deserializing the file to a dictionary
                     Dictionary<string, dynamic>? json_data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(jsonString);
-                    // Assuming json_data contains a "data" key which is an array of data points
-                    if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> dataPoints)
+                    // Checking if the dictionary contains a "data" key which is an array of data points
+                    if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> DataPoints)
                     {
                         // Trimming the data to the requested number of entries if necessary
-                        json_data["data"] = dataPoints.Take(RealGDPperCapitaPeriod.Value).ToList();
+                        json_data["data"] = DataPoints.Take(RealGDPperCapitaPeriod.Value).ToList();
                     }
 
                     // Saving the cache
                     SaveCache2(json_data, RealGDPperCapita);
-                    // Returning the data
+                    // Returning the data as a JSON object
                     return new JsonResult(json_data);
                 }
             }
@@ -392,14 +393,16 @@ namespace TradeInformant.Pages
                     // Downloading the data from the API
                     string jsonString = client.DownloadString(uri);
                     Dictionary<string, dynamic>? json_data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(jsonString);
-                    // Assuming json_data contains a "data" key which is an array of data points
-                    if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> dataPoints)
+                    // Checking if the dictionary contains a "data" key which is an array of data points
+                    if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> DataPoints)
                     {
                         // Trimming the data to the requested number of entries if necessary
-                        json_data["data"] = dataPoints.Take(CPIperiod.Value).ToList();
+                        json_data["data"] = DataPoints.Take(CPIperiod.Value).ToList();
                     }
 
+                    // Saving the cache
                     SaveCache3(json_data, CPI_name);
+                    // Returning the data as a JSON object
                     return new JsonResult(json_data);
                 }
             }
@@ -510,15 +513,15 @@ namespace TradeInformant.Pages
                     string jsonString = client.DownloadString(uri);
                     // Deserializing the file
                     Dictionary<string, dynamic>? json_data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(jsonString);
-                    // Assuming json_data contains a "data" key which is an array of data points
-                    if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> dataPoints)
+                    // Checking if the dictionary contains a "data" key which is an array of data points
+                    if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> DataPoints)
                     {
                         // Trimming the data to the requested number of entries if necessary
-                        json_data["data"] = dataPoints.Take(InflationPeriod.Value).ToList();
+                        json_data["data"] = DataPoints.Take(InflationPeriod.Value).ToList();
                     }
                     // Saving the cache
                     SaveCache4(json_data, Inflation);
-                    // Returning the data
+                    // Returning the data as a JSON object
                     return new JsonResult(json_data);
                 }
             }
@@ -627,15 +630,15 @@ namespace TradeInformant.Pages
                     // Downloading the data from the API
                     string jsonString = client.DownloadString(uri);
                     Dictionary<string, dynamic>? json_data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(jsonString);
-                    // Assuming json_data contains a "data" key which is an array of data points
-                    if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> dataPoints)
+                    // Checking if the dictionary contains a "data" key which is an array of data points
+                    if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> DataPoints)
                     {
                         // Trimming the data to the requested number of entries if necessary
-                        json_data["data"] = dataPoints.Take(UnemploymentRatePeriod.Value).ToList();
+                        json_data["data"] = DataPoints.Take(UnemploymentRatePeriod.Value).ToList();
                     }
                     // Saving the cache
                     SaveCache5(json_data, UnemploymentRate);
-                    // Returning the data
+                    // Return the data as a JSON object
                     return new JsonResult(json_data);
                 }
             }
