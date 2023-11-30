@@ -433,7 +433,7 @@ namespace TradeInformant.Pages
                 return false;
             }
 
-            // Splitting the data into two subsets based on a split
+            // Splitting the data into two subsets based on a split and returning the two subsets
             private (List<Dictionary<string, decimal>> LeftFeatures, List<string> LeftLabels,
             List<Dictionary<string, decimal>> RightFeatures, List<string> RightLabels)
             // Method to partition the data into two subsets based on a split
@@ -461,7 +461,7 @@ namespace TradeInformant.Pages
                 return (LeftFeatures, LeftLabels, RightFeatures, RightLabels);
             }
 
-            // Method to calculate the information gain
+            // Method to calculate the information gain by splitting the data based on a Feature and Value
             private decimal InformationGain(List<Dictionary<string, decimal>> Features, List<string> Labels, string Feature, decimal Value)
             {
                 // Splitting the data
@@ -484,7 +484,7 @@ namespace TradeInformant.Pages
                 return informationGain;
             }
 
-            // Method to find the best Feature and Value to split on
+            // Method to find the best Feature and Value to split on based on the information gain
             private (string BestFeature, decimal BestValue) FindBestSplit(List<Dictionary<string, decimal>> Features, List<string> Labels)
             {
                 decimal BestGain = decimal.MinValue;

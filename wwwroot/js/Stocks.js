@@ -3,27 +3,27 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
     // Prevent the default form submission behavior.
     event.preventDefault();
 
-    // Get the input values from the form.
+    // Getting the input values from the form.
     const StockName = document.getElementById("StockName").value;
     const Interval = document.getElementById("Interval").value;
     const Periods = parseInt(document.getElementById("Periods").value);
 
-    // Validate the period input.
+    // Validating the period input.
     if (isNaN(Periods) || Periods < 1 || Periods > 100) {
         alert("Please enter a valid number of Periods.");
         return;
     }
 
-    // Prepare the query parameters for the fetch request.
+    // Preparing the query parameters for the fetch request.
     const query = new URLSearchParams({
         StockName: StockName,
         Interval: Interval,
         Periods: Periods
     });
 
-    // Make a fetch request to the server with the query parameters.
+    // Making a fetch request to the server with the query parameters.
     fetch("/Stocks?" + query.toString())
-        // Return the response as JSON if the request was successful.
+        // Returning the response as JSON if the request was successful.
         .then(response => {
             if (!response.ok) {
                 // If there's an error, reject the promise.
@@ -36,17 +36,17 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
         })
         // If the response was successful, display the stock information.
         .then(data => {
-            // Extract the time series data based on the selected Interval.
+            // Extracting the time series data based on the selected Interval.
             const timeSeries = GetTimeSeries(data, Interval);
 
-            // Compute SMA, EMA, RSI, and MACD.
+            // Computing SMA, EMA, RSI, and MACD.
             const SMA = ComputeSMA(timeSeries, Periods);
             const EMA = ComputeEMA(timeSeries, Periods);
             const RSI = ComputeRSI(timeSeries, Periods);
             const MACD = ComputeMACD(timeSeries);
-            // Display the stock information.
+            // Displaying the stock information.
             DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD);
-
+            // Sending the indicators to the server for prediction.
             const indicators = {
                 SMA: SMA,
                 EMA: EMA && EMA.length > 0 ? EMA[EMA.length - 1] : null,
@@ -66,7 +66,7 @@ document.getElementById("StockForm").addEventListener("submit", function (event)
 });
 
 
-// Get the time series data based on the selected Interval.
+// Getting the time series data based on the selected Interval.
 function GetTimeSeries(data, Interval) {
     switch (Interval) {
         case "Daily":
@@ -85,7 +85,6 @@ function GetTimeSeries(data, Interval) {
 }
 
 
-// Compute the Simple Moving Average (SMA) for the given period.
 function ComputeSMA(timeSeries, Periods) {
     // If the timeSeries data is not available, return null.
     if (!timeSeries) return null;
@@ -96,7 +95,6 @@ function ComputeSMA(timeSeries, Periods) {
 }
 
 
-// Compute the Exponential Moving Average (EMA) for the given period.
 function ComputeEMA(input, Periods) {
     let closingPrices;
 
@@ -131,32 +129,31 @@ function ComputeEMA(input, Periods) {
 }
 
 
-
 function ComputeRSI(timeSeries, Periods) {
     let gains = [];
     let losses = [];
 
     const closingPrices = Object.values(timeSeries).map(day => parseFloat(day["4. close"]));
 
-    // Calculate the gains and losses for each day.
+    // Calculating the gains and losses for each day.
     for (let i = 1; i < closingPrices.length; i++) {
         let change = closingPrices[i] - closingPrices[i - 1];
         gains.push(Math.max(change, 0)); // If change is negative, push 0
         losses.push(Math.max(-change, 0)); // If change is positive or 0, push 0
     }
 
-    // Calculate the average gain and average loss for the first N days.
+    // Calculating the average gain and average loss for the first N days.
     let avgGain = gains.slice(0, Periods).reduce((acc, gain) => acc + gain, 0) / Periods;
     let avgLoss = losses.slice(0, Periods).reduce((acc, loss) => acc + loss, 0) / Periods;
 
-    // Calculate the initial RSI value.
+    // Calculating the initial RSI value.
     let RS = avgGain / avgLoss;
     let initialRSI = 100 - (100 / (1 + RS));
 
-    // Initialize RSI as an array with the initial RSI value.
+    // Initializing RSI as an array with the initial RSI value.
     let RSI = [initialRSI];
 
-    // Calculate the RSI for the remaining days.
+    // Calculating the RSI for the remaining days.
     for (let i = Periods; i < gains.length; i++) {
         avgGain = ((avgGain * (Periods - 1)) + gains[i]) / Periods;
         avgLoss = ((avgLoss * (Periods - 1)) + losses[i]) / Periods;
@@ -169,7 +166,6 @@ function ComputeRSI(timeSeries, Periods) {
     return RSI;
 }
 
-// Compute the Moving Average Convergence Divergence (MACD) for the given period.
 function ComputeMACD(timeSeries) {
     const closingPrices = Object.values(timeSeries).map(day => parseFloat(day["4. close"]));
 
@@ -177,7 +173,7 @@ function ComputeMACD(timeSeries) {
     let shortEMA = ComputeEMA(timeSeries, 12);
     let longEMA = ComputeEMA(timeSeries, 26);
 
-    //Compute MACD Line
+    //Computing MACD
     let MACD = [];
     for (let i = 0; i < closingPrices.length; i++) {
         // Ensure that we have values for both EMA12 and EMA26 before subtracting.
@@ -186,10 +182,10 @@ function ComputeMACD(timeSeries) {
         }
     }
 
-    //Compute Signal Line
+    //Computing Signal Line
     let signalLine = ComputeEMA(MACD, 9);
 
-    //Compute MACD Histogram
+    //Computing MACD Histogram
     let histogram = [];
     for (let i = 0; i < MACD.length; i++) {
         if (MACD[i] !== undefined && signalLine[i] !== undefined) {
@@ -204,28 +200,27 @@ function ComputeMACD(timeSeries) {
     };
 }
 
-// Display stock data, SMA, and EMA on the web page.
 function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction = null) {
     const output = document.getElementById("StockResult");
 
     if (prediction !== null) {
-        UpdateDisplayWithPrediction({ Prediction: prediction })
+        PredictionDisplay({ Prediction: prediction })
     }
 
     let timeSeriesDate;
 
-    // Determine the time series data based on the selected Interval.
+    // Determining the time series data based on the selected Interval.
     switch (Interval) {
         case "Daily":
-            // For daily data, use the "Time Series (Daily)" key.
+            // For daily data, using the "Time Series (Daily)" key.
             timeSeriesDate = "Time Series (Daily)";
             break;
         case "Weekly":
-            // For weekly data, use the "Weekly Time Series" key.
+            // For weekly data, using the "Weekly Time Series" key.
             timeSeriesDate = "Weekly Time Series";
             break;
         case "Monthly":
-            // For monthly data, use the "Monthly Time Series" key.
+            // For monthly data, using the "Monthly Time Series" key.
             timeSeriesDate = "Monthly Time Series";
             break;
         default:
@@ -233,7 +228,7 @@ function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction =
             return;
     }
 
-    // Extract the time series data for the selected Interval.
+    // Extracting the time series data for the selected Interval.
     const timeSeries = data[timeSeriesDate];
 
     if (!timeSeries) {
@@ -241,15 +236,15 @@ function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction =
         return;
     }
 
-    // Extract the first N dates from the time series data.
+    // Extracting the first N dates from the time series data.
     const dates = Object.keys(timeSeries).slice(0, Periods);
 
-    // Extract the stock information for the latest date.
+    // Extracting the stock information for the latest date.
     let lastMACDValue = (MACD.MACD && MACD.MACD.length > 0) ? MACD.MACD[MACD.MACD.length - 1].toFixed(2) : "N/A";
     let signalLineValue = (MACD.signalLine && MACD.signalLine.length > 0) ? MACD.signalLine[MACD.signalLine.length - 1].toFixed(2) : "N/A";
     let histogramValue = (MACD.histogram && MACD.histogram.length > 0) ? MACD.histogram[MACD.histogram.length - 1].toFixed(2) : "N/A";
 
-    // Update the output with the SMA and EMA values.
+    // Updating the output with the SMA and EMA values.
     output.innerHTML = ` 
     <div>
         <p><strong>SMA:</strong> ${SMA.toFixed(2)}</p>
@@ -261,9 +256,9 @@ function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction =
     </div>
     `;
 
-    // Display each stock data entry in a card format.
+    // Displaying each stock data entry in a card format.
     for (const date of dates) {
-        // Extract the stock information for the current date.
+        // Extracting the stock information for the current date.
         const stockInfo = timeSeries[date];
         output.innerHTML += `
         <div class="col-md-3">
@@ -285,10 +280,10 @@ function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction =
 
 
 function DataForMLA(indicators) {
-    // Construct query string from indicators object
-    const queryParams = new URLSearchParams(indicators).toString();
+    // Constructing query string from indicators object
+    const query2 = new URLSearchParams(indicators).toString();
 
-    return fetch(`/Stocks?handler=PredictionCalculation&${queryParams}`)
+    return fetch(`/Stocks?handler=PredictionCalculation&${query2}`)
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok ' + response.statusText);
@@ -296,28 +291,27 @@ function DataForMLA(indicators) {
             return response.json();
         })
         .then(predictionData => {
-            UpdateDisplayWithPrediction(predictionData);
+            PredictionDisplay(predictionData);
         })
         .catch(error => {
             console.error('Error sending indicators to server:', error);
         });
 }
 
-
-function UpdateDisplayWithPrediction(predictionData) {
+ 
+function PredictionDisplay(predictionData) {
     const predictionElement = document.getElementById('PredictionResult');
     if (predictionElement) {
         predictionElement.textContent = `Prediction: ${predictionData.prediction}`;
     }
 }
 
-document.getElementById("trainModel").addEventListener("click", function (event) {
-    trainModel();
+document.getElementById("TrainModel").addEventListener("click", function (event) {
+    TrainModel();
 });
 
 
-function trainModel() {
-    // Example training data
+function TrainModel() {
     const trainingData = {
         Features: [
             { "SMA": 151.41, "EMA": 133.73, "RSI": 52.23, "MACD": 4.60, "signalLine": 4.67, "histogram": -0.22 },
@@ -340,19 +334,18 @@ function trainModel() {
             "Buy",
         ]
     };
-    const queryParams = new URLSearchParams();
+    const query2 = new URLSearchParams();
     for (let i = 0; i < trainingData.Features.length; i++) {
-        queryParams.append(`Features[${i}][SMA]`, trainingData.Features[i].SMA);
-        queryParams.append(`Features[${i}][EMA]`, trainingData.Features[i].EMA);
-        queryParams.append(`Features[${i}][RSI]`, trainingData.Features[i].RSI);
-        queryParams.append(`Features[${i}][MACD]`, trainingData.Features[i].MACD);
-        queryParams.append(`Features[${i}][signalLine]`, trainingData.Features[i].signalLine);
-        queryParams.append(`Features[${i}][histogram]`, trainingData.Features[i].histogram);
-        queryParams.append(`Labels[${i}]`, trainingData.Labels[i]);
+        query2.append(`Features[${i}][SMA]`, trainingData.Features[i].SMA);
+        query2.append(`Features[${i}][EMA]`, trainingData.Features[i].EMA);
+        query2.append(`Features[${i}][RSI]`, trainingData.Features[i].RSI);
+        query2.append(`Features[${i}][MACD]`, trainingData.Features[i].MACD);
+        query2.append(`Features[${i}][signalLine]`, trainingData.Features[i].signalLine);
+        query2.append(`Features[${i}][histogram]`, trainingData.Features[i].histogram);
+        query2.append(`Labels[${i}]`, trainingData.Labels[i]);
     }
 
-    // Send the GET request with query parameters
-    return fetch(`/Stocks?handler=TrainModel&${queryParams.toString()}`, {
+    return fetch(`/Stocks?handler=TrainModel&${query2.toString()}`, {
         method: "GET"
     })
         .then(response => {
