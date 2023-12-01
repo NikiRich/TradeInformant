@@ -39,7 +39,7 @@ namespace TradeInformant.Pages
         {
             _env = env;
         }
-        // Class to store the cache entry
+        // Class to store the cache entry 
         public class CacheEntry
         {
             // Dictionary to store the data
@@ -151,6 +151,7 @@ namespace TradeInformant.Pages
                 {
                     // Downloading the data from the API
                     string jsonString = client.DownloadString(uri);
+                    // Deserializing the file to a dictionary
                     Dictionary<string, dynamic>? json_data = JsonSerializer.Deserialize<Dictionary<string, dynamic>>(jsonString);
                     // Checking if the dictionary contains a "data" key which is an array of data points
                     if (json_data.ContainsKey("data") && json_data["data"] is List<dynamic> DataPoints)

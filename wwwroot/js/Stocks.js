@@ -302,9 +302,11 @@ function DataForMLA(indicators) {
 
 function PredictionDisplay(predictionData) {
     const predictionElement = document.getElementById('PredictionResult');
-    if (predictionElement) {
-        predictionElement.textContent = `Prediction: ${predictionData.prediction}`;
-    }
+    predictionElement.innerHTML = `
+    <div>
+        <p><strong>Prediction:</strong> ${predictionData.prediction}</p>
+    </div>
+    `;
 }
 
 document.getElementById("TrainModel").addEventListener("click", function (event) {
