@@ -34,6 +34,7 @@ namespace TradeInformant.Pages
 
 
         // Interface that provides information about the web hosting environment an application is running in
+        // It is needed to get the path to the directory where cached files are stored
         public US_Economic_IndicatorsModel(IWebHostEnvironment env)
         {
             _env = env;
@@ -127,7 +128,7 @@ namespace TradeInformant.Pages
             // Switch statement to convert the string to the required format for the API
             switch (RealGDP)
             {
-                case "Annualy":
+                case "Annually":
                     RealGDP = "annual";
                     break;
                 case "Quarterly":
@@ -372,7 +373,7 @@ namespace TradeInformant.Pages
                 case "Monthly":
                     CPI = "monthly";
                     break;
-                case "SemiAnnualy":
+                case "SemiAnnually":
                     CPI = "semiannual";
                     break;
             }

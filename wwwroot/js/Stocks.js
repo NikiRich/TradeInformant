@@ -133,6 +133,7 @@ function ComputeRSI(timeSeries, Periods) {
     let gains = [];
     let losses = [];
 
+    // Extracting the closing prices from the time series data.
     const closingPrices = Object.values(timeSeries).map(day => parseFloat(day["4. close"]));
 
     // Calculating the gains and losses for each day.
@@ -244,7 +245,7 @@ function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction =
     let signalLineValue = (MACD.signalLine && MACD.signalLine.length > 0) ? MACD.signalLine[MACD.signalLine.length - 1].toFixed(2) : "N/A";
     let histogramValue = (MACD.histogram && MACD.histogram.length > 0) ? MACD.histogram[MACD.histogram.length - 1].toFixed(2) : "N/A";
 
-    // Updating the output with the SMA and EMA values.
+    // Updating the output with the stock information.
     output.innerHTML = ` 
     <div>
         <p><strong>SMA:</strong> ${SMA.toFixed(2)}</p>
@@ -282,7 +283,7 @@ function DisplayStock(data, Interval, Periods, SMA, EMA, RSI, MACD, prediction =
 function DataForMLA(indicators) {
     // Constructing query string from indicators object
     const query2 = new URLSearchParams(indicators).toString();
-
+    // Sending the indicators to the server for prediction.
     return fetch(`/Stocks?handler=PredictionCalculation&${query2}`)
         .then(response => {
             if (!response.ok) {
@@ -298,7 +299,7 @@ function DataForMLA(indicators) {
         });
 }
 
- 
+
 function PredictionDisplay(predictionData) {
     const predictionElement = document.getElementById('PredictionResult');
     if (predictionElement) {

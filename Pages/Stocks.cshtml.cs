@@ -24,6 +24,7 @@ namespace TradeInformant.Pages
 
 
         // Interface that provides information about the web hosting environment an application is running in
+        // It is needed to get the path to the directory where cached files are stored
         public StocksModel(IWebHostEnvironment env)
         {
             _env = env;
@@ -251,9 +252,18 @@ namespace TradeInformant.Pages
             }
         }
 
+        // This class is for storing the TrainModeling data
+        public class TrainModelingData
+        {
+            // The TrainModeling data is stored as a list of Features and a list of Labels
+            public List<Dictionary<string, decimal>> Features { get; set; }
+            public List<string> Labels { get; set; }
+        }
+
         // This method is for TrainModeling the model with provided TrainModeling data.
         public IActionResult OnGetTrainModel([FromQuery] TrainModelingData TrainModelingData)
         {
+            // Checking if the TrainModeling data is valid
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
@@ -263,7 +273,7 @@ namespace TradeInformant.Pages
             List<Dictionary<string, decimal>> Features = TrainModelingData.Features;
             List<string> Labels = TrainModelingData.Labels;
 
-            // Creating an instance of the CART algorithm and TrainModel it
+            // Creating an instance of the CART algorithm and training the model
             var cart = new CART();
             cart.TrainModel(Features, Labels);
 
@@ -290,7 +300,7 @@ namespace TradeInformant.Pages
                 return new JsonResult(new { Error = "The model could not load" });
             }
 
-            // Converting the indicators to the expected format
+            // Converting the indicators to the expected format for the CART algorithm
             var Input = new Dictionary<string, decimal>
             {
                 { "SMA", indicators.SMA },
@@ -307,17 +317,6 @@ namespace TradeInformant.Pages
             // Returning the prediction result
             return new JsonResult(new { prediction });
         }
-
-
-
-        // This class is for storing the TrainModeling data
-        public class TrainModelingData
-        {
-            // The TrainModeling data is stored as a list of Features and a list of Labels
-            public List<Dictionary<string, decimal>> Features { get; set; }
-            public List<string> Labels { get; set; }
-        }
-
 
         // Decision tree node class that stores the information about a node in the decision tree
         public class DecisionTreeNode
@@ -379,42 +378,6 @@ namespace TradeInformant.Pages
 
             }
 
-            // Method for building the decision tree with the provided TrainModeling data
-            private DecisionTreeNode BuildTree(List<Dictionary<string, decimal>> Features, List<string> Labels)
-            {
-                // Checking for stopping conditions
-                if (StopSplit(Features, Labels))
-                {
-                    // Returning a leaf node with the most common label
-                    return new DecisionTreeNode
-                    {
-                        // Setting the IsLeaf property to true
-                        IsLeaf = true,
-                        // Finding the most common label
-                        Prediction = Labels.GroupBy(x => x).OrderByDescending(x => x.Count()).First().Key
-                    };
-                }
-
-                // Finding the best Feature and Value to split on
-                var (BestFeature, BestValue) = FindBestSplit(Features, Labels);
-
-                // Partitioning the data into two subsets based on the best split
-                var (LeftFeatures, LeftLabels, RightFeatures, RightLabels) = PartitionData(Features, Labels, BestFeature, BestValue);
-
-                // Recursively build the tree
-                var LeftChild = BuildTree(LeftFeatures, LeftLabels);
-                var RightChild = BuildTree(RightFeatures, RightLabels);
-
-                // Returning the current node
-                return new DecisionTreeNode
-                {
-                    FeatureToSplit = BestFeature,
-                    SplitValue = (decimal)BestValue,
-                    LeftChild = LeftChild,
-                    RightChild = RightChild
-                };
-            }
-
             // Method to check for stopping conditions
             private bool StopSplit(List<Dictionary<string, decimal>> Features, List<string> Labels)
             {
@@ -434,10 +397,7 @@ namespace TradeInformant.Pages
             }
 
             // Splitting the data into two subsets based on a split and returning the two subsets
-            private (List<Dictionary<string, decimal>> LeftFeatures, List<string> LeftLabels,
-            List<Dictionary<string, decimal>> RightFeatures, List<string> RightLabels)
-            // Method to partition the data into two subsets based on a split
-            PartitionData(List<Dictionary<string, decimal>> Features, List<string> Labels, string Feature, decimal Value)
+            private (List<Dictionary<string, decimal>> LeftFeatures, List<string> LeftLabels, List<Dictionary<string, decimal>> RightFeatures, List<string> RightLabels) PartitionData(List<Dictionary<string, decimal>> Features, List<string> Labels, string Feature, decimal Value)
             {
                 var LeftFeatures = new List<Dictionary<string, decimal>>();
                 var LeftLabels = new List<string>();
@@ -459,6 +419,22 @@ namespace TradeInformant.Pages
                 }
 
                 return (LeftFeatures, LeftLabels, RightFeatures, RightLabels);
+            }
+            // Method to calculate the entropy which is the measure of impurity in a set of Labels
+            private decimal Entropy(List<string> Labels)
+            {
+                // Grouping the Labels and count occurrences
+                var labelCounts = Labels.GroupBy(l => l).ToDictionary(g => g.Key, g => g.Count());
+
+                // Calculating the entropy
+                decimal entropy = 0;
+                foreach (var labelCount in labelCounts)
+                {
+                    double probability = (double)labelCount.Value / Labels.Count;
+                    entropy -= (decimal)(probability * Math.Log(probability, 2));
+                }
+
+                return entropy;
             }
 
             // Method to calculate the information gain by splitting the data based on a Feature and Value
@@ -514,21 +490,24 @@ namespace TradeInformant.Pages
                 return (BestFeature, BestValue ?? default);
             }
 
-            // Method to calculate the entropy which is the measure of impurity in a set of Labels
-            private decimal Entropy(List<string> Labels)
+            // Predicting the label for a single data point from a given node
+            private string PredictFromNode(DecisionTreeNode node, Dictionary<string, decimal> Features)
             {
-                // Grouping the Labels and count occurrences
-                var labelCounts = Labels.GroupBy(l => l).ToDictionary(g => g.Key, g => g.Count());
-
-                // Calculating the entropy
-                decimal entropy = 0;
-                foreach (var labelCount in labelCounts)
+                // Base case: if the node is a leaf, return the prediction
+                if (node.IsLeaf)
                 {
-                    double probability = (double)labelCount.Value / Labels.Count;
-                    entropy -= (decimal)(probability * Math.Log(probability, 2));
+                    return node.Prediction;
                 }
 
-                return entropy;
+                // Recursive case: traverse the tree based on the Feature's Value to split on and return the prediction
+                if (Features[node.FeatureToSplit] <= node.SplitValue)
+                {
+                    return PredictFromNode(node.LeftChild, Features);
+                }
+                else
+                {
+                    return PredictFromNode(node.RightChild, Features);
+                }
             }
 
             // Predicting the label for a single data point
@@ -541,24 +520,41 @@ namespace TradeInformant.Pages
                 return PredictFromNode(Root, Input);
             }
 
-            // Predicting the label for a single data point from a given node
-            private string PredictFromNode(DecisionTreeNode node, Dictionary<string, decimal> Features)
+    
+            // Method for building the decision tree with the provided TrainModeling data
+            private DecisionTreeNode BuildTree(List<Dictionary<string, decimal>> Features, List<string> Labels)
             {
-                // Base case: if the node is a leaf, return the prediction
-                if (node.IsLeaf)
+                // Checking for stopping conditions
+                if (StopSplit(Features, Labels))
                 {
-                    return node.Prediction;
+                    // Returning a leaf node with the most common label
+                    return new DecisionTreeNode
+                    {
+                        // Setting the IsLeaf property to true
+                        IsLeaf = true,
+                        // Finding the most common label
+                        Prediction = Labels.GroupBy(x => x).OrderByDescending(x => x.Count()).First().Key
+                    };
                 }
 
-                // Recursive case: traverse the tree based on the Feature's Value
-                if (Features[node.FeatureToSplit] <= node.SplitValue)
+                // Finding the best Feature and Value to split on
+                var (BestFeature, BestValue) = FindBestSplit(Features, Labels);
+
+                // Partitioning the data into two subsets based on the best split
+                var (LeftFeatures, LeftLabels, RightFeatures, RightLabels) = PartitionData(Features, Labels, BestFeature, BestValue);
+
+                // Recursively build the tree
+                var LeftChild = BuildTree(LeftFeatures, LeftLabels);
+                var RightChild = BuildTree(RightFeatures, RightLabels);
+
+                // Returning the current node with the best split information and the two child nodes
+                return new DecisionTreeNode
                 {
-                    return PredictFromNode(node.LeftChild, Features);
-                }
-                else
-                {
-                    return PredictFromNode(node.RightChild, Features);
-                }
+                    FeatureToSplit = BestFeature,
+                    SplitValue = (decimal)BestValue,
+                    LeftChild = LeftChild,
+                    RightChild = RightChild
+                };
             }
         }
     }
